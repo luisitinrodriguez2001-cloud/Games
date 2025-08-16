@@ -3,6 +3,7 @@ import {createBoard} from './board.js';
 import {createKeyboard} from './keyboard.js';
 import {createLetterStrip} from './letter-strip.js';
 import {GUESS_BANDS, BAND_COLORS, getScoreForGuess, getBandForGuess} from './state.js';
+import {createResultsModal} from './results.js';
 
 const modeId = document.body.dataset.mode;
 const module = await import(`./engine/${modeId}.js`);
@@ -49,6 +50,7 @@ const scoreEl = document.getElementById('score');
 const headerEl = document.querySelector('header');
 let categorySelect = null;
 let streak = parseInt(localStorage.getItem('sandwichle-streak')||'0',10);
+let trophies = parseInt(localStorage.getItem('sandwichle-trophies')||'0',10);
 let currentGuess = '';
 let gameOver = false;
 let score = 0;
@@ -77,6 +79,7 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
     submitGuess();
   }
 });
+const resultsModal = createResultsModal();
 
 function showError(msg) {
   feedbackEl.textContent = msg;
@@ -92,8 +95,14 @@ function clearError() {
   }
 }
 
+function saveHistory(win, guesses) {
+  const history = JSON.parse(localStorage.getItem('sandwichle-history') || '[]');
+  history.push({win, guesses});
+  localStorage.setItem('sandwichle-history', JSON.stringify(history));
+}
+
 function updateStats(){
-  statsEl.textContent = `Streak: ${streak}`;
+  statsEl.textContent = `Streak: ${streak} 🏆${trophies}`;
 }
 updateStats();
 
@@ -155,14 +164,23 @@ function submitGuess() {
     gameOver = true;
     submitBtn.disabled = true;
     streak++;
+    trophies++;
     localStorage.setItem('sandwichle-streak', streak);
+    localStorage.setItem('sandwichle-trophies', trophies);
     updateStats();
     score = getScoreForGuess(game.state.guesses.length);
     scoreEl.textContent = `Score: ${score}/5`;
     render();
+    saveHistory(true, game.state.guesses.length);
     const share = encodeShare(game.state.guesses, game.state.targetIdx);
-    navigator.clipboard?.writeText(share).catch(()=>{});
-    alert('Win!\n'+share);
+    resultsModal.show({
+      win: true,
+      target: game.state.target,
+      trophies,
+      guessesUsed: game.state.guesses.length,
+      streak,
+      share
+    });
   } else if (res.lose) {
     gameOver = true;
     submitBtn.disabled = true;
@@ -170,7 +188,16 @@ function submitGuess() {
     localStorage.setItem('sandwichle-streak', streak);
     updateStats();
     render();
-    alert('Lose! Target was '+game.state.target);
+    saveHistory(false, game.state.guesses.length);
+    const share = encodeShare(game.state.guesses, game.state.targetIdx);
+    resultsModal.show({
+      win: false,
+      target: game.state.target,
+      trophies,
+      guessesUsed: game.state.guesses.length,
+      streak,
+      share
+    });
   }
 }
 

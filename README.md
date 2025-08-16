@@ -19,8 +19,8 @@ No API keys are needed.
 
 ## How it works
 
-- **Round setup**: picks a target word from the common list; then fetches top associations via Datamuse (`rel_trg`), and the definition via Free Dictionary.
-- **Guesses**: each guess computes **relatedness** between the guess and the target using ConceptNet’s `/relatedness` endpoint. This drives a **temperature meter** and incremental scoring.
+- **Round setup**: picks a **noun** from the common list; then fetches top noun associations via Datamuse (`rel_trg`), and the definition via Free Dictionary.
+- **Guesses**: player entries must be nouns; each guess computes **relatedness** between the guess and the target using ConceptNet’s `/relatedness` endpoint. This drives a **temperature meter** and incremental scoring.
 - **Hints**: revealing a hint uncovers one of the top Datamuse associations (costs points). Very cold guesses will auto-reveal an extra hint to keep the game flowing.
 - **Modes**: Arcade (relaxed), Timed (90s timer), Daily (date-seeded hint order and streak tracking).
 - **Persistence**: settings and stats saved to localStorage.

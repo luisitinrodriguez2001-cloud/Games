@@ -24,10 +24,9 @@ app.innerHTML = `
 </header>
 <main class="flex flex-col h-full">
   <div id="board" class="p-2 border-b border-gray-700"></div>
-  <form id="composer" class="flex gap-2 p-2 border-b border-gray-700">
+  <div id="composer" class="flex gap-2 p-2 border-b border-gray-700">
     <div id="guess" class="flex-1 p-2 rounded bg-gray-800 text-gray-100"></div>
-    <button type="submit" class="px-4 py-2 rounded bg-green-500 text-gray-900 font-semibold">Guess</button>
-  </form>
+  </div>
   <div id="letter-strip" class="p-2 border-b border-gray-700"></div>
   <div id="keyboard" class="flex flex-wrap gap-2 justify-center p-2 border-b border-gray-700"></div>
   <div id="feedback" class="text-center text-sm p-2"></div>
@@ -41,9 +40,7 @@ const board = createBoard(document.getElementById('board'));
 const feedbackEl = document.getElementById('feedback');
 const attemptTextEl = document.getElementById('attempt-text');
 const attemptCirclesEl = document.getElementById('attempt-circles');
-const form = document.getElementById('composer');
 const guessEl = document.getElementById('guess');
-const submitBtn = form.querySelector('button');
 const countdownEl = document.getElementById('countdown');
 const statsEl = document.getElementById('stats');
 const scoreEl = document.getElementById('score');
@@ -131,17 +128,10 @@ async function startGame() {
   currentGuess = '';
   guessEl.textContent = '';
   gameOver = false;
-  submitBtn.disabled = false;
   score = 0;
   scoreEl.textContent = `Score: ${score}/5`;
   render();
 }
-
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  submitGuess();
-});
-
 function submitGuess() {
   if (gameOver) return;
   const val = currentGuess.trim();
@@ -162,7 +152,6 @@ function submitGuess() {
   render();
   if (res.win) {
     gameOver = true;
-    submitBtn.disabled = true;
     streak++;
     trophies++;
     localStorage.setItem('sandwichle-streak', streak);
@@ -183,7 +172,6 @@ function submitGuess() {
     });
   } else if (res.lose) {
     gameOver = true;
-    submitBtn.disabled = true;
     streak = 0;
     localStorage.setItem('sandwichle-streak', streak);
     updateStats();

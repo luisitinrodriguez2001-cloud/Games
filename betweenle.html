@@ -17,15 +17,17 @@
     <label><input type="checkbox" id="darkMode"> Dark Mode</label>
   </div>
   <div id="boundaries">
-    <span id="startWord">-----</span>
-    <span id="endWord">-----</span>
-  </div>
-  <div id="guessArea">
-    <input id="guess" placeholder="Your guess" maxlength="5" />
-    <button id="submitGuess">Guess</button>
+    <div id="startWord">-----</div>
+    <div id="guessArea">
+      <input id="guess" placeholder="Your guess" maxlength="5" />
+      <button id="submitGuess">Guess</button>
+      <div id="guessCounter">0/10</div>
+    </div>
+    <div id="endWord">-----</div>
   </div>
   <div id="message"></div>
   <ul id="history"></ul>
+  <div id="result"></div>
   <script src="betweenle.js"></script>
 </body>
 </html>

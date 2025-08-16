@@ -5,7 +5,7 @@ const module = await import(`./engine/${modeId}.js`);
 const params = new URLSearchParams(location.search);
 const daily = !params.has('practice');
 const attempts = daily ? 14 : parseInt(params.get('attempts')||'14',10);
-const game = module.newGame({daily, attempts});
+let game;
 const mode = modeId;
 
 const app = document.getElementById('app');
@@ -26,6 +26,29 @@ const log = document.getElementById('log');
 const form = document.getElementById('composer');
 const input = form.querySelector('input');
 const countdownEl = document.getElementById('countdown');
+const headerEl = document.querySelector('header');
+let categorySelect = null;
+
+if (mode === 'words' && module.loadManifest) {
+  const manifest = await module.loadManifest();
+  categorySelect = document.createElement('select');
+  Object.entries(manifest).forEach(([slug, info]) => {
+    const opt = document.createElement('option');
+    opt.value = slug;
+    opt.textContent = info.name;
+    categorySelect.appendChild(opt);
+  });
+  headerEl.appendChild(categorySelect);
+}
+
+async function startGame() {
+  if (mode === 'words' && categorySelect) {
+    game = await module.newGame({daily, attempts, category: categorySelect.value});
+  } else {
+    game = module.newGame({daily, attempts});
+  }
+  render();
+}
 
 form.addEventListener('submit', e => {
   e.preventDefault();
@@ -44,6 +67,11 @@ form.addEventListener('submit', e => {
     alert('Lose! Target was '+game.state.target);
   }
 });
+
+if (mode === 'words' && categorySelect) {
+  categorySelect.addEventListener('change', startGame);
+}
+await startGame();
 
 function render() {
   const state = game.state;
@@ -64,7 +92,6 @@ function render() {
   });
   log.lastElementChild?.scrollIntoView({behavior:'smooth', block:'end'});
 }
-render();
 
 function updateCountdown(){
   const now = new Date();

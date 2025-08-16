@@ -3,10 +3,12 @@ export function createBoard(container) {
   const boardEl = container;
   boardEl.classList.add('board');
 
-  function render(state) {
+  function render(state, guess) {
     boardEl.innerHTML = '';
     const rows = [];
-    rows.push({word: state.list[0]});
+    // top cue
+    rows.push({word: state.list[state.top]});
+    // previous guesses
     state.guesses.forEach(g => {
       rows.push({
         word: g.value,
@@ -16,7 +18,12 @@ export function createBoard(container) {
         win: g.win
       });
     });
-    rows.push({word: state.list[state.list.length - 1]});
+    // current in-progress guess
+    if (guess !== undefined) {
+      rows.push({word: guess});
+    }
+    // bottom cue
+    rows.push({word: state.list[state.bottom]});
 
     rows.forEach(item => {
       const row = document.createElement('div');

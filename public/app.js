@@ -24,9 +24,6 @@ app.innerHTML = `
 </header>
 <main class="flex flex-col h-full">
   <div id="board" class="p-2 border-b border-gray-700"></div>
-  <div id="composer" class="flex gap-2 p-2 border-b border-gray-700">
-    <div id="guess" class="flex-1 p-2 rounded bg-gray-800 text-gray-100"></div>
-  </div>
   <div id="letter-strip" class="p-2 border-b border-gray-700"></div>
   <div id="keyboard" class="flex flex-wrap gap-2 justify-center p-2 border-b border-gray-700"></div>
   <div id="feedback" class="text-center text-sm p-2"></div>
@@ -40,7 +37,6 @@ const board = createBoard(document.getElementById('board'));
 const feedbackEl = document.getElementById('feedback');
 const attemptTextEl = document.getElementById('attempt-text');
 const attemptCirclesEl = document.getElementById('attempt-circles');
-const guessEl = document.getElementById('guess');
 const countdownEl = document.getElementById('countdown');
 const statsEl = document.getElementById('stats');
 const scoreEl = document.getElementById('score');
@@ -58,8 +54,7 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
     if (currentGuess.length < 5) {
       clearError();
       currentGuess += ch.toLowerCase();
-      guessEl.textContent = currentGuess.toUpperCase();
-      keyboard.update(game.state, currentGuess);
+      render();
     }
   },
   onBackspace: () => {
@@ -67,8 +62,7 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
     if (currentGuess.length) {
       clearError();
       currentGuess = currentGuess.slice(0, -1);
-      guessEl.textContent = currentGuess.toUpperCase();
-      keyboard.update(game.state, currentGuess);
+      render();
     }
   },
   onEnter: () => {
@@ -126,7 +120,6 @@ async function startGame() {
     game = module.newGame({daily, attempts});
   }
   currentGuess = '';
-  guessEl.textContent = '';
   gameOver = false;
   score = 0;
   scoreEl.textContent = `Score: ${score}/5`;
@@ -148,7 +141,6 @@ function submitGuess() {
   lastGuess.distance = res.distance;
   clearError();
   currentGuess = '';
-  guessEl.textContent = '';
   render();
   if (res.win) {
     gameOver = true;
@@ -199,7 +191,7 @@ await startGame();
 
 function render() {
   const state = game.state;
-  board.render(state);
+  board.render(state, currentGuess);
   feedbackEl.classList.remove('text-red-500');
   delete feedbackEl.dataset.error;
 

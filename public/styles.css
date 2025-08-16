@@ -79,3 +79,27 @@ main {
   font-weight: 600;
   text-transform: uppercase;
 }
+
+.board-hint {
+  width: 3.5rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.board-hint-arrow {
+  font-size: 1.25rem;
+}
+
+.board-hint-distance {
+  font-size: 0.75rem;
+}
+
+.board-hint-close {
+  color: var(--accent);
+  font-size: 1.25rem;
+  line-height: 1;
+}

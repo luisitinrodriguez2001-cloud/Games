@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sandwichle++</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-900 text-gray-100">
+  <h1 class="text-2xl font-semibold">Sandwichle++</h1>
+  <div id="streak" class="text-lg"></div>
+  <div class="flex flex-col gap-2 w-64">
+    <a href="./sandwichle.html" class="px-4 py-2 rounded bg-green-500 text-gray-900 text-center font-semibold">Daily Puzzle</a>
+    <a href="./sandwichle.html?practice=1" class="px-4 py-2 rounded bg-blue-500 text-gray-100 text-center font-semibold">Practice / Levels</a>
+    <a href="./how-to-play.html" class="px-4 py-2 rounded bg-gray-700 text-gray-100 text-center font-semibold">How to Play</a>
+  </div>
+  <script>
+    const streak = localStorage.getItem('sandwichle-streak') || 0;
+    document.getElementById('streak').textContent = `Current Streak: ${streak}`;
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,58 @@
+:root {
+  --bg: #eef0ff;
+  --fg: #111;
+  --accent: #ff8c00;
+  --spacing: 8px;
+}
+[data-theme="dark"] {
+  --bg: #12131a;
+  --fg: #f0f0f0;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing);
+}
+main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+#log {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing);
+}
+.guess-row {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.guess-row.closest::before {
+  content: '•';
+  color: var(--accent);
+  margin-right: var(--spacing);
+}
+#composer {
+  display: flex;
+  padding: var(--spacing);
+  gap: var(--spacing);
+}
+#composer input {
+  flex: 1;
+  font-size: 1.2rem;
+  padding: var(--spacing);
+}
+#composer button {
+  padding: var(--spacing) calc(var(--spacing) * 2);
+  font-size: 1rem;
+}

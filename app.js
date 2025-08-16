@@ -100,12 +100,14 @@
 
   // Datamuse: associations ("triggers") and synonyms
   async function datamuseAssociations(word) {
-    const url = `https://api.datamuse.com/words?rel_trg=${encodeURIComponent(word)}&max=20`;
-    return fetchJSON(url, "DM");
+    const url = `https://api.datamuse.com/words?rel_trg=${encodeURIComponent(word)}&max=20&md=p`;
+    const j = await fetchJSON(url, "DM");
+    return j.filter((w) => (w.tags || []).includes("n"));
   }
   async function datamuseSynonyms(word) {
-    const url = `https://api.datamuse.com/words?rel_syn=${encodeURIComponent(word)}&max=20`;
-    return fetchJSON(url, "DM");
+    const url = `https://api.datamuse.com/words?rel_syn=${encodeURIComponent(word)}&max=20&md=p`;
+    const j = await fetchJSON(url, "DM");
+    return j.filter((w) => (w.tags || []).includes("n"));
   }
   // ConceptNet relatedness 0..1
   async function conceptNetRelatedness(a, b) {
@@ -118,17 +120,31 @@
     const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
     const j = await fetchJSON(url, "FD");
     const entry = Array.isArray(j) ? j[0] : null;
-    if (!entry) return { pos: "—", text: "—" };
-    const meaningKey = entry.meanings && entry.meanings[0];
+    if (!entry) return { pos: "—", text: "—", isNoun: false };
+    const meanings = entry.meanings || [];
+    const meaningKey = meanings[0];
     const pos = meaningKey?.partOfSpeech ?? "—";
     const defs =
       meaningKey?.definitions
         ?.slice(0, 2)
         ?.map((d) => "• " + d.definition)
         ?.join("\n") ?? "—";
-    return { pos, text: defs };
+    const isNoun = meanings.some((m) => m.partOfSpeech === "noun");
+    return { pos, text: defs, isNoun };
   }
-  // Random target word (noun/adj preferred). Fallback: Datamuse pattern.
+  const nounCache = {};
+  async function isNoun(word) {
+    if (nounCache[word] != null) return nounCache[word];
+    try {
+      const { isNoun } = await freeDictDefinition(word);
+      nounCache[word] = isNoun;
+      return isNoun;
+    } catch {
+      nounCache[word] = false;
+      return false;
+    }
+  }
+  // Random target word (noun only). Fallback: Datamuse pattern.
   let commonWordPool = null;
   async function loadCommonWords() {
     if (commonWordPool) return commonWordPool;
@@ -146,18 +162,25 @@
   }
   async function randomWord() {
     const pool = await loadCommonWords();
-    if (pool.length)
-      return pool[Math.floor(Math.random() * pool.length)];
-    // Fallback via Datamuse: pick random 4-6 letter common word
+    if (pool.length) {
+      for (let i = 0; i < 20; i++) {
+        const w = pool[Math.floor(Math.random() * pool.length)];
+        if (await isNoun(w)) return w;
+      }
+    }
+    // Fallback via Datamuse: pick random 4-6 letter common noun
     const len = 4 + Math.floor(Math.random() * 3);
     const pattern = "?".repeat(len);
     try {
       const j = await fetchJSON(
-        `https://api.datamuse.com/words?sp=${pattern}&max=1000&md=f`,
+        `https://api.datamuse.com/words?sp=${pattern}&max=1000&md=p,f`,
         "DM",
       );
       const pool2 = j.filter(
-        (w) => (w.score ?? 0) > 20000 && /^[a-z]+$/.test(w.word),
+        (w) =>
+          (w.score ?? 0) > 20000 &&
+          /^[a-z]+$/.test(w.word) &&
+          (w.tags || []).includes("n"),
       );
       if (pool2.length)
         return sanitizeWord(pool2[Math.floor(Math.random() * pool2.length)].word);
@@ -337,13 +360,7 @@
   }
 
   async function validateWord(word) {
-    if (!app.settings.strictValidation) return true;
-    try {
-      await freeDictDefinition(word);
-      return true;
-    } catch {
-      return false;
-    }
+    return await isNoun(word);
   }
 
   async function onGuess() {
@@ -371,10 +388,9 @@
       return;
     }
 
-    // validation (optional)
     const ok = await validateWord(word);
     if (!ok) {
-      dom.status.textContent = "Not a recognized word (strict mode).";
+      dom.status.textContent = "Please enter a noun.";
       return;
     }
 

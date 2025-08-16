@@ -10,15 +10,16 @@ const mode = modeId;
 
 const app = document.getElementById('app');
 app.innerHTML = `
-<header>
-  <h1>Betweenle++</h1>
-  <div id="countdown"></div>
+<header class="flex flex-col items-center gap-2 mb-4">
+  <h1 class="text-2xl font-semibold">Betweenle++</h1>
+  <div id="countdown" class="text-sm opacity-75"></div>
+  <div id="stats" class="text-sm"></div>
 </header>
-<main>
-  <div id="log" role="log" aria-live="polite"></div>
-  <form id="composer">
-    <input aria-label="Guess" autocomplete="off" />
-    <button type="submit">Guess</button>
+<main class="flex flex-col h-full">
+  <div id="log" role="log" aria-live="polite" class="flex-1 overflow-y-auto mb-4 space-y-1"></div>
+  <form id="composer" class="flex gap-2">
+    <input aria-label="Guess" autocomplete="off" class="flex-1 p-2 rounded bg-gray-800 text-gray-100" />
+    <button type="submit" class="px-4 py-2 rounded bg-green-500 text-gray-900 font-semibold">Guess</button>
   </form>
 </main>`;
 
@@ -26,18 +27,29 @@ const log = document.getElementById('log');
 const form = document.getElementById('composer');
 const input = form.querySelector('input');
 const countdownEl = document.getElementById('countdown');
+const statsEl = document.getElementById('stats');
 const headerEl = document.querySelector('header');
 let categorySelect = null;
+let streak = parseInt(localStorage.getItem('betweenle-streak')||'0',10);
+
+function updateStats(){
+  statsEl.textContent = `Streak: ${streak}`;
+}
+updateStats();
 
 if (mode === 'words' && module.loadManifest) {
   const manifest = await module.loadManifest();
   categorySelect = document.createElement('select');
+  categorySelect.className = 'w-full p-2 rounded bg-gray-800 text-gray-100';
   Object.entries(manifest).forEach(([slug, info]) => {
     const opt = document.createElement('option');
     opt.value = slug;
     opt.textContent = info.name;
     categorySelect.appendChild(opt);
   });
+  const stored = localStorage.getItem('betweenle-category');
+  categorySelect.value = stored && manifest[stored] ? stored : 'icecream';
+  localStorage.setItem('betweenle-category', categorySelect.value);
   headerEl.appendChild(categorySelect);
 }
 
@@ -62,14 +74,25 @@ form.addEventListener('submit', e => {
   render();
   input.value='';
   if (res.win) {
-    alert('Win!\n'+encodeShare(game.state.guesses, game.state.targetIdx));
+    streak++;
+    localStorage.setItem('betweenle-streak', streak);
+    updateStats();
+    const share = encodeShare(game.state.guesses, game.state.targetIdx);
+    navigator.clipboard?.writeText(share).catch(()=>{});
+    alert('Win!\n'+share);
   } else if (res.lose) {
+    streak = 0;
+    localStorage.setItem('betweenle-streak', streak);
+    updateStats();
     alert('Lose! Target was '+game.state.target);
   }
 });
 
 if (mode === 'words' && categorySelect) {
-  categorySelect.addEventListener('change', startGame);
+  categorySelect.addEventListener('change', () => {
+    localStorage.setItem('betweenle-category', categorySelect.value);
+    startGame();
+  });
 }
 await startGame();
 
@@ -86,7 +109,10 @@ function render() {
   items.push({label: state.list[state.bottom], info:'', cls:'guess-row bound'});
   items.forEach(it=>{
     const row = document.createElement('div');
-    row.className = it.cls;
+    row.className = `${it.cls} flex justify-between p-2 border-b border-gray-700`;
+    if (it.cls.includes('closest')) {
+      row.classList.add('text-purple-400');
+    }
     row.innerHTML = `<span>${it.label}</span><span>${it.info}</span>`;
     log.appendChild(row);
   });

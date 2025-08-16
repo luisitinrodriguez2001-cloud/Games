@@ -54,7 +54,7 @@ def build_icecream():
     res = requests.get(url, params={'query': query, 'format': 'json'}, timeout=60).json()
     words = [b['itemLabel']['value'] for b in res['results']['bindings']]
     words = [w for w in words if zipf_frequency(w, 'en') >= 2.5]
-    write_list('ice-cream', 'Ice-cream Flavors', words)
+    write_list('icecream', 'Icecream Flavors', words)
 
 
 # --- College majors / academic disciplines from Wikidata ---

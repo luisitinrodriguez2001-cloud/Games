@@ -31,8 +31,8 @@ async function loadList(slug) {
   const uniq = Array.from(new Set(norm));
   const targetLen = uniq[0]?.length || 0;
   const filtered = uniq.filter(w => w.length === targetLen);
-  if (filtered.length < 100) {
-    throw new Error('Category requires at least 100 single words of equal length');
+  if (filtered.length !== uniq.length) {
+    throw new Error('Category requires all words to be the same length');
   }
   filtered.sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'}));
   return {list: filtered, info};

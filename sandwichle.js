@@ -112,7 +112,7 @@ function endGame(won) {
   document.getElementById('submitGuess').disabled = true;
   document.getElementById('guess').disabled = true;
   const score = won ? guesses : 'X';
-  const share = `Betweenle Plus ${score}/${GUESS_LIMIT}\n${resultsBoxes.join('')}\n\nPlay at ${location.href}`;
+  const share = `Sandwichle Plus ${score}/${GUESS_LIMIT}\n${resultsBoxes.join('')}\n\nPlay at ${location.href}`;
   try {
     navigator.clipboard.writeText(share);
   } catch {}

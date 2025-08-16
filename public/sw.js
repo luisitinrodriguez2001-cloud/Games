@@ -1,6 +1,6 @@
-const CACHE = 'betweenlepp-v2';
+const CACHE = 'sandwichlepp-v2';
 const ASSETS = [
-  '/public/betweenle.html',
+  '/public/sandwichle.html',
   '/public/numbers.html',
   '/public/countries.html',
   '/public/dates.html',

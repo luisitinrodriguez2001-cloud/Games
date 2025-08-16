@@ -3,104 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mini Game Hub</title>
+    <title>Sandwichle++</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
     <style>
-      :root {
-        --bg-start: #f7faff;
-        --bg-end: #e2ecf9;
-        --card-bg: rgba(255, 255, 255, 0.8);
-        --card-hover: rgba(255, 255, 255, 1);
-        --text-color: #213547;
-        --accent: #8fbcd4;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
       body {
         margin: 0;
         font-family: 'Poppins', sans-serif;
-        background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-        color: var(--text-color);
+        background: linear-gradient(135deg, #f7faff, #e2ecf9);
         display: flex;
-        flex-direction: column;
         align-items: center;
+        justify-content: center;
         min-height: 100vh;
       }
-
-      header {
-        text-align: center;
-        padding: 3rem 1rem 1rem;
-      }
-
-      h1 {
-        margin: 0 0 0.5rem;
-        font-weight: 600;
-      }
-
-      p {
-        margin: 0;
-        opacity: 0.8;
-      }
-
-      main {
-        width: 100%;
-        max-width: 900px;
-        padding: 2rem 1rem 4rem;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 1.5rem;
-      }
-
-      a.card {
-        background: var(--card-bg);
-        border-radius: 16px;
-        padding: 1.5rem;
-        text-align: center;
+      a.play {
+        padding: 1rem 2rem;
+        background: #8fbcd4;
+        color: #213547;
         text-decoration: none;
-        color: inherit;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        border-radius: 8px;
+        font-weight: 600;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       }
-
-      a.card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        background: var(--card-hover);
+      a.play:hover {
+        background: #a5cde1;
       }
-
       @media (prefers-color-scheme: dark) {
-        :root {
-          --bg-start: #1e293b;
-          --bg-end: #334155;
-          --card-bg: rgba(255, 255, 255, 0.1);
-          --card-hover: rgba(255, 255, 255, 0.2);
-          --text-color: #f1f5f9;
-          --accent: #7dd3fc;
-        }
-        body {
-          background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-        }
-        a.card {
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-        }
+        body { background: linear-gradient(135deg, #1e293b, #334155); }
+        a.play { background: #7dd3fc; color: #1e293b; }
+        a.play:hover { background: #9ae8ff; }
       }
     </style>
   </head>
   <body>
-    <header>
-      <h1>Mini Game Hub</h1>
-      <p>Select a game to start playing</p>
-    </header>
-    <main>
-      <a class="card" href="sandwichle.html">Sandwichle Plus</a>
-      <a class="card" href="public/sandwichle.html">Sandwichle++ Words</a>
-      <a class="card" href="public/dates.html">Sandwichle++ Dates</a>
-      <a class="card" href="public/countries.html">Sandwichle++ Countries</a>
-      <a class="card" href="public/pokemon.html">Sandwichle++ Pokémon</a>
-      <a class="card" href="public/numbers.html">Sandwichle++ Numbers</a>
-    </main>
+    <a class="play" href="public/sandwichle.html">Play Sandwichle++</a>
   </body>
 </html>

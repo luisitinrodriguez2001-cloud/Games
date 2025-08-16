@@ -1,5 +1,4 @@
 export function createBoard(container) {
-  const CLOSE_THRESHOLD = 5; // percent
   const boardEl = container;
   boardEl.classList.add('board');
 
@@ -7,27 +6,18 @@ export function createBoard(container) {
     boardEl.innerHTML = '';
     const rows = [];
     // top cue
-    rows.push({word: state.list[state.top]});
-    // previous guesses
-    state.guesses.forEach(g => {
-      rows.push({
-        word: g.value,
-        arrow: g.arrow,
-        distance: g.distance,
-        close: g.distance < CLOSE_THRESHOLD,
-        win: g.win
-      });
-    });
+    rows.push({word: state.list[state.top], idx: state.top, cue: true});
     // current in-progress guess
     if (guess !== undefined) {
       rows.push({word: guess});
     }
     // bottom cue
-    rows.push({word: state.list[state.bottom]});
+    rows.push({word: state.list[state.bottom], idx: state.bottom, cue: true});
 
     rows.forEach(item => {
       const row = document.createElement('div');
       row.className = 'board-row';
+      if (item.cue) row.classList.add('cue');
       if (item.win) row.classList.add('win');
       for (let i = 0; i < 5; i++) {
         const tile = document.createElement('div');
@@ -43,17 +33,11 @@ export function createBoard(container) {
         arrow.textContent = item.arrow;
         hint.appendChild(arrow);
       }
-      if (typeof item.distance === 'number') {
-        const dist = document.createElement('span');
-        dist.className = 'board-hint-distance';
-        dist.textContent = `${item.distance}%`;
-        hint.appendChild(dist);
-        if (item.close) {
-          const dot = document.createElement('span');
-          dot.className = 'board-hint-close';
-          dot.textContent = '•';
-          hint.appendChild(dot);
-        }
+      if (typeof item.idx === 'number') {
+        const idx = document.createElement('span');
+        idx.className = 'board-hint-distance';
+        idx.textContent = `#${item.idx+1}`;
+        hint.appendChild(idx);
       }
       row.appendChild(hint);
       boardEl.appendChild(row);

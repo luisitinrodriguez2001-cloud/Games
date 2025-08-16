@@ -96,7 +96,7 @@ function saveHistory(win, guesses) {
 }
 
 function updateStats(){
-  statsEl.textContent = `Streak: ${streak} 🏆${trophies}`;
+  statsEl.innerHTML = `<div>Streak: ${streak}</div><div>Trophies: ${trophies}</div>`;
 }
 updateStats();
 
@@ -141,7 +141,6 @@ function submitGuess() {
   const lastGuess = res.state.guesses[res.state.guesses.length-1];
   lastGuess.arrow = arrow;
   lastGuess.win = res.win;
-  lastGuess.distance = res.distance;
   clearError();
   currentGuess = '';
   render();
@@ -200,7 +199,7 @@ function render() {
 
   const last = state.guesses[state.guesses.length-1];
   if (last) {
-    feedbackEl.textContent = `Distance: ${last.distance}% ${last.arrow || ''}`;
+    feedbackEl.textContent = `Index: ${last.idx+1} ${last.arrow || ''}`;
   } else {
     feedbackEl.textContent = '';
   }

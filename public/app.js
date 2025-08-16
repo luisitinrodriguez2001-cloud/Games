@@ -96,7 +96,7 @@ function saveHistory(win, guesses) {
 }
 
 function updateStats(){
-  statsEl.innerHTML = `<div>Streak: ${streak}</div><div>Trophies: ${trophies}</div>`;
+  statsEl.innerHTML = `<div>Streak: ${streak}</div><div aria-label="Trophies: ${trophies}">🏆 ${trophies}</div>`;
 }
 updateStats();
 

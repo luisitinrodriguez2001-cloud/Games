@@ -45,6 +45,7 @@ const letterStrip = createLetterStrip(document.getElementById('letter-strip'));
 const keyboard = createKeyboard(document.getElementById('keyboard'), {
   onLetter: ch => {
     if (currentGuess.length < 5) {
+      clearError();
       currentGuess += ch.toLowerCase();
       guessEl.textContent = currentGuess.toUpperCase();
       keyboard.update(game.state, currentGuess);
@@ -52,6 +53,7 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
   },
   onBackspace: () => {
     if (currentGuess.length) {
+      clearError();
       currentGuess = currentGuess.slice(0, -1);
       guessEl.textContent = currentGuess.toUpperCase();
       keyboard.update(game.state, currentGuess);
@@ -61,6 +63,20 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
     submitGuess();
   }
 });
+
+function showError(msg) {
+  feedbackEl.textContent = msg;
+  feedbackEl.classList.add('text-red-500');
+  feedbackEl.dataset.error = '1';
+}
+
+function clearError() {
+  if (feedbackEl.dataset.error) {
+    feedbackEl.textContent = '';
+    feedbackEl.classList.remove('text-red-500');
+    delete feedbackEl.dataset.error;
+  }
+}
 
 function updateStats(){
   statsEl.textContent = `Streak: ${streak}`;
@@ -104,9 +120,10 @@ function submitGuess() {
   if (val.length !== 5) return;
   const res = game.guess(val);
   if (res.error) {
-    alert('Invalid guess');
+    showError('Invalid guess');
     return;
   }
+  clearError();
   currentGuess = '';
   guessEl.textContent = '';
   render();
@@ -136,6 +153,8 @@ await startGame();
 function render() {
   const state = game.state;
   board.render(state);
+  feedbackEl.classList.remove('text-red-500');
+  delete feedbackEl.dataset.error;
 
   const last = state.guesses[state.guesses.length-1];
   if (last) {

@@ -10,16 +10,21 @@ body.dark {
 }
 #boundaries {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
   margin: 20px auto;
   max-width: 400px;
   font-size: 1.2em;
 }
 #guessArea {
-  margin: 20px;
+  margin: 10px 0;
 }
 #guess {
   text-transform: lowercase;
+}
+#guessCounter {
+  margin-top: 10px;
+  font-weight: bold;
 }
 #history {
   list-style: none;
@@ -27,4 +32,11 @@ body.dark {
 }
 #history li {
   margin: 5px 0;
+}
+#result {
+  margin-top: 20px;
+}
+#result pre {
+  white-space: pre-wrap;
+  margin: 0;
 }

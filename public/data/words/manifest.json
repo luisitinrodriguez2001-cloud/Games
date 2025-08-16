@@ -1,0 +1,26 @@
+{
+  "general": {
+    "file": "./general.json",
+    "name": "General 5-letter Words"
+  },
+  "ice-cream": {
+    "file": "./ice-cream.json",
+    "name": "Ice-cream Flavors"
+  },
+  "majors": {
+    "file": "./majors.json",
+    "name": "College Majors"
+  },
+  "animals": {
+    "file": "./animals.json",
+    "name": "Animals"
+  },
+  "countries": {
+    "file": "./countries.json",
+    "name": "Countries"
+  },
+  "pokemon": {
+    "file": "./pokemon.json",
+    "name": "Pokémon"
+  }
+}

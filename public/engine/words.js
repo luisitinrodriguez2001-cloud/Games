@@ -1,34 +1,61 @@
 import {createEngine} from './core.js';
 import {yyyyMMddUTC, seedOf, rng} from './seed.js';
 
-const allow = (await fetch('./data/words-allow.txt').then(r=>r.text())).trim().split(/\s+/);
-const solutions = (await fetch('./data/words-solution.txt').then(r=>r.text())).trim().split(/\s+/);
+const MANIFEST_URL = './data/words/manifest.json';
+let manifestCache = null;
+
+export async function loadManifest() {
+  if (!manifestCache) {
+    manifestCache = await fetch(MANIFEST_URL).then(r => r.json());
+  }
+  return manifestCache;
+}
+
+async function loadList(slug) {
+  const manifest = await loadManifest();
+  const info = manifest[slug];
+  if (!info) throw new Error('Unknown category');
+  const data = await fetch(info.file).then(r => r.json());
+  let list;
+  if (Array.isArray(data)) {
+    // simple string list
+    list = data.map(w => (typeof w === 'string' ? w : w.name));
+  } else {
+    // array of objects with name fields
+    list = (data.words || data).map(obj => obj.name || obj);
+  }
+  const norm = list.map(s => s.normalize('NFC').toLowerCase());
+  const uniq = Array.from(new Set(norm));
+  uniq.sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'}));
+  return {list: uniq, info};
+}
 
 const SALT = import.meta.env?.VITE_WORDS_SALT || 'words';
 
-export function newGame({daily=true, attempts=14}={}) {
+export async function newGame({daily=true, attempts=14, category='general'}={}) {
+  const {list} = await loadList(category);
   let idx;
   if (daily) {
-    const s = seedOf(yyyyMMddUTC(), 'words', 'general', SALT);
-    idx = s % solutions.length;
+    const s = seedOf(yyyyMMddUTC(), 'words', category, SALT);
+    idx = s % list.length;
   } else {
-    idx = Math.floor(rng(Date.now())()*solutions.length);
+    idx = Math.floor(rng(Date.now())()*list.length);
   }
-  const target = solutions[idx];
-  return createEngine(mode, solutions, target, attempts);
-}
+  const target = list[idx];
 
-const mode = {
-  id: 'words',
-  normalize: s => s.normalize('NFC').toLowerCase(),
-  compare: (a,b) => a.localeCompare(b),
-  indexOf: (list, v) => list.indexOf(v),
-  initialBounds: list => ({top:0, bottom:list.length-1}),
-  randomSecret: (list, seed) => list[Math.floor(seed*list.length)],
-  isValid: (v) => allow.includes(v),
-  toLabel: w => w,
-  distancePercent: (gi, ti, top, bottom) => {
-    const range = bottom - top;
-    return range ? Math.round(Math.abs(gi - ti)/range*100) : 0;
-  }
-};
+  const mode = {
+    id: 'words',
+    normalize: s => s.normalize('NFC').toLowerCase(),
+    compare: (a,b) => a.localeCompare(b),
+    indexOf: (lst, v) => lst.indexOf(v),
+    initialBounds: lst => ({top:0, bottom:lst.length-1}),
+    randomSecret: (lst, seed) => lst[Math.floor(seed*lst.length)],
+    isValid: (v, lst) => lst.includes(v),
+    toLabel: w => w,
+    distancePercent: (gi, ti, top, bottom) => {
+      const range = bottom - top;
+      return range ? Math.round(Math.abs(gi - ti)/range*100) : 0;
+    }
+  };
+  return createEngine(mode, list, target, attempts);
+}

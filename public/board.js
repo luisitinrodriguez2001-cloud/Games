@@ -8,14 +8,12 @@ export function createBoard(container) {
     const rows = [];
     rows.push({word: state.list[0]});
     state.guesses.forEach(g => {
-      const distance = Math.round(
-        Math.abs(g.idx - state.targetIdx) / state.list.length * 100
-      );
       rows.push({
         word: g.value,
-        arrow: g.idx < state.targetIdx ? '↑' : g.idx > state.targetIdx ? '↓' : '',
-        distance,
-        close: distance < CLOSE_THRESHOLD
+        arrow: g.arrow,
+        distance: g.distance,
+        close: g.distance < CLOSE_THRESHOLD,
+        win: g.win
       });
     });
     rows.push({word: state.list[state.list.length - 1]});
@@ -23,6 +21,7 @@ export function createBoard(container) {
     rows.forEach(item => {
       const row = document.createElement('div');
       row.className = 'board-row';
+      if (item.win) row.classList.add('win');
       for (let i = 0; i < 5; i++) {
         const tile = document.createElement('div');
         tile.className = 'board-tile';

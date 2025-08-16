@@ -35,15 +35,18 @@ const feedbackEl = document.getElementById('feedback');
 const attemptsEl = document.getElementById('attempts');
 const form = document.getElementById('composer');
 const guessEl = document.getElementById('guess');
+const submitBtn = form.querySelector('button');
 const countdownEl = document.getElementById('countdown');
 const statsEl = document.getElementById('stats');
 const headerEl = document.querySelector('header');
 let categorySelect = null;
 let streak = parseInt(localStorage.getItem('sandwichle-streak')||'0',10);
 let currentGuess = '';
+let gameOver = false;
 const letterStrip = createLetterStrip(document.getElementById('letter-strip'));
 const keyboard = createKeyboard(document.getElementById('keyboard'), {
   onLetter: ch => {
+    if (gameOver) return;
     if (currentGuess.length < 5) {
       clearError();
       currentGuess += ch.toLowerCase();
@@ -52,6 +55,7 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
     }
   },
   onBackspace: () => {
+    if (gameOver) return;
     if (currentGuess.length) {
       clearError();
       currentGuess = currentGuess.slice(0, -1);
@@ -60,6 +64,7 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
     }
   },
   onEnter: () => {
+    if (gameOver) return;
     submitGuess();
   }
 });
@@ -107,6 +112,8 @@ async function startGame() {
   }
   currentGuess = '';
   guessEl.textContent = '';
+  gameOver = false;
+  submitBtn.disabled = false;
   render();
 }
 
@@ -116,6 +123,7 @@ form.addEventListener('submit', e => {
 });
 
 function submitGuess() {
+  if (gameOver) return;
   const val = currentGuess.trim();
   if (val.length !== 5) return;
   const res = game.guess(val);
@@ -123,11 +131,18 @@ function submitGuess() {
     showError('Invalid guess');
     return;
   }
+  const arrow = res.cmp < 0 ? '↑' : res.cmp > 0 ? '↓' : '';
+  const lastGuess = res.state.guesses[res.state.guesses.length-1];
+  lastGuess.arrow = arrow;
+  lastGuess.win = res.win;
+  lastGuess.distance = res.distance;
   clearError();
   currentGuess = '';
   guessEl.textContent = '';
   render();
   if (res.win) {
+    gameOver = true;
+    submitBtn.disabled = true;
     streak++;
     localStorage.setItem('sandwichle-streak', streak);
     updateStats();
@@ -158,8 +173,7 @@ function render() {
 
   const last = state.guesses[state.guesses.length-1];
   if (last) {
-    const arrow = last.idx < state.targetIdx ? '↑' : last.idx > state.targetIdx ? '↓' : '';
-    feedbackEl.textContent = `Index: ${last.idx} ${arrow}`;
+    feedbackEl.textContent = `Distance: ${last.distance}% ${last.arrow || ''}`;
   } else {
     feedbackEl.textContent = '';
   }

@@ -54,7 +54,8 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
     if (currentGuess.length < 5) {
       clearError();
       currentGuess += ch.toLowerCase();
-      render();
+      board.render(game.state, currentGuess);
+      keyboard.update(game.state, currentGuess);
     }
   },
   onBackspace: () => {
@@ -62,7 +63,8 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
     if (currentGuess.length) {
       clearError();
       currentGuess = currentGuess.slice(0, -1);
-      render();
+      board.render(game.state, currentGuess);
+      keyboard.update(game.state, currentGuess);
     }
   },
   onEnter: () => {

@@ -1,11 +1,11 @@
 # Word Association — CodePen-ready game
 
-This is a smooth, mobile-friendly word association game that uses **free public APIs**:
+This is a smooth, mobile-friendly word association game that uses **free public APIs** and a built-in list of common English words:
 
-- **Datamuse** for association *clues* (the `rel_trg` “triggers” endpoint) and synonyms. 
-- **ConceptNet** for a semantic *closeness* score to drive the hot/cold meter. 
-- **Free Dictionary API** for definitions and part-of-speech. 
-- **Random Word API** for selecting target words (with a Datamuse fallback).
+- **Datamuse** for association *clues* (the `rel_trg` “triggers” endpoint) and synonyms.
+- **ConceptNet** for a semantic *closeness* score to drive the hot/cold meter.
+- **Free Dictionary API** for definitions and part-of-speech.
+- **Common word list** (top 1000 Google words) for selecting target words, with a Datamuse fallback.
 
 No API keys are needed.
 
@@ -19,7 +19,7 @@ No API keys are needed.
 
 ## How it works
 
-- **Round setup**: picks a target word via Random Word API; then fetches top associations via Datamuse (`rel_trg`), and the definition via Free Dictionary.
+- **Round setup**: picks a target word from the common list; then fetches top associations via Datamuse (`rel_trg`), and the definition via Free Dictionary.
 - **Guesses**: each guess computes **relatedness** between the guess and the target using ConceptNet’s `/relatedness` endpoint. This drives a **temperature meter** and incremental scoring.
 - **Hints**: revealing a hint uncovers one of the top Datamuse associations (costs points). Very cold guesses will auto-reveal an extra hint to keep the game flowing.
 - **Modes**: Arcade (relaxed), Timed (90s timer), Daily (date-seeded hint order and streak tracking).
@@ -30,12 +30,12 @@ No API keys are needed.
 
 - `index.html` — structure and footer links to source APIs.
 - `styles.css` — modern gradient background, accessible palette, color-blind toggle.
-- `app.js` — all logic, including API clients, hot/cold scoring, CSV export, daily streaks, and graceful fallbacks.
+- `app.js` — all logic, including API clients, hot/cold scoring, CSV export, daily streaks, and graceful fallbacks. Includes a common word list loader for simpler targets.
 
 ## Notes
 
 - ConceptNet relatedness values are typically ~0.05–0.40 for loosely related words; thresholds are tuned in code but easily adjustable.
-- If Random Word API is down, a Datamuse pattern-based fallback is used to pick a fairly common word.
+- If the local list fails to load, a Datamuse pattern-based fallback is used to pick a fairly common word.
 - Turn on **Strict validation** in Settings to require dictionary-confirmed words for guesses.
 
 Enjoy!

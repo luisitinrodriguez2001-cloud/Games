@@ -8,12 +8,11 @@
     <link rel="stylesheet" href="styles.css" />
     <meta
       name="description"
-      content="A smooth, mobile-friendly word association game that uses free public APIs (Datamuse, ConceptNet, Free Dictionary, Random Word API)."
+      content="A smooth, mobile-friendly word association game that uses free public APIs (Datamuse, ConceptNet, Free Dictionary) and a built-in list of common words."
     />
     <link rel="preconnect" href="https://api.datamuse.com" />
     <link rel="preconnect" href="https://api.conceptnet.io" />
     <link rel="preconnect" href="https://api.dictionaryapi.dev" />
-    <link rel="preconnect" href="https://random-word-api.herokuapp.com" />
   </head>
   <body>
     <header class="app-header">
@@ -138,8 +137,8 @@
           for clues</label
         >
         <label
-          ><input type="checkbox" id="toggleRandomWord" checked /> Use Random
-          Word API to pick targets</label
+          ><input type="checkbox" id="toggleRandomWord" checked /> Use common
+          word list to pick targets</label
         >
         <label
           ><input type="checkbox" id="toggleStrictValidation" /> Strict guess
@@ -169,13 +168,6 @@
         •
         <a href="https://conceptnet.io/" target="_blank" rel="noopener"
           >ConceptNet</a
-        >
-        •
-        <a
-          href="https://random-word-api.herokuapp.com/home"
-          target="_blank"
-          rel="noopener"
-          >Random Word API</a
         >
       </div>
     </footer>

@@ -16,14 +16,20 @@ app.innerHTML = `
   <div id="stats" class="text-sm"></div>
 </header>
 <main class="flex flex-col h-full">
-  <div id="log" role="log" aria-live="polite" class="flex-1 overflow-y-auto mb-4 space-y-1"></div>
+  <div id="top" class="text-center p-2 border-b border-gray-700"></div>
   <form id="composer" class="flex gap-2 p-2 border-b border-gray-700">
     <input aria-label="Guess" autocomplete="off" class="flex-1 p-2 rounded bg-gray-800 text-gray-100" />
     <button type="submit" class="px-4 py-2 rounded bg-green-500 text-gray-900 font-semibold">Guess</button>
   </form>
+  <div id="bottom" class="text-center p-2 border-b border-gray-700"></div>
+  <div id="feedback" class="text-center text-sm p-2"></div>
+  <div id="attempts" class="text-center text-sm p-2"></div>
 </main>`;
 
-const log = document.getElementById('log');
+const topEl = document.getElementById('top');
+const bottomEl = document.getElementById('bottom');
+const feedbackEl = document.getElementById('feedback');
+const attemptsEl = document.getElementById('attempts');
 const form = document.getElementById('composer');
 const input = form.querySelector('input');
 const countdownEl = document.getElementById('countdown');
@@ -98,30 +104,19 @@ await startGame();
 
 function render() {
   const state = game.state;
-  log.innerHTML='';
+  topEl.textContent = state.list[state.top];
+  bottomEl.textContent = state.list[state.bottom];
 
-  const topRow = document.createElement('div');
-  topRow.className = 'guess-row bound flex justify-between p-2 border-b border-gray-700';
-  topRow.innerHTML = `<span>${state.list[state.top]}</span><span></span>`;
-  log.appendChild(topRow);
+  const last = state.guesses[state.guesses.length-1];
+  if (last) {
+    const arrow = last.idx < state.targetIdx ? '↑' : last.idx > state.targetIdx ? '↓' : '🎯';
+    feedbackEl.textContent = `Index: ${last.idx} ${arrow}`;
+  } else {
+    feedbackEl.textContent = '';
+  }
 
-  state.guesses.forEach((g,i)=>{
-    const arrow = g.idx < state.targetIdx ? '↑' : g.idx > state.targetIdx ? '↓' : '🎯';
-    const row = document.createElement('div');
-    row.className = 'guess-row flex justify-between p-2 border-b border-gray-700';
-    if (i===state.closestIdx) row.classList.add('closest','text-purple-400');
-    row.innerHTML = `<span>${state.list[g.idx]}</span><span>${g.distance}% ${arrow}</span>`;
-    log.appendChild(row);
-  });
-
-  log.appendChild(form);
-
-  const bottomRow = document.createElement('div');
-  bottomRow.className = 'guess-row bound flex justify-between p-2 border-b border-gray-700';
-  bottomRow.innerHTML = `<span>${state.list[state.bottom]}</span><span></span>`;
-  log.appendChild(bottomRow);
-
-  bottomRow.scrollIntoView({behavior:'smooth', block:'end'});
+  const used = attempts - state.attemptsLeft;
+  attemptsEl.textContent = `Guesses: ${used}/${attempts}`;
 }
 
 function updateCountdown(){
@@ -131,7 +126,7 @@ function updateCountdown(){
   const h = String(Math.floor(diff/3600000)).padStart(2,'0');
   const m = String(Math.floor(diff%3600000/60000)).padStart(2,'0');
   const s = String(Math.floor(diff%60000/1000)).padStart(2,'0');
-  countdownEl.textContent = `${h}:${m}:${s}`;
+  countdownEl.textContent = `Next puzzle in ${h}:${m}:${s}`;
 }
 setInterval(updateCountdown,1000);
 updateCountdown();

@@ -11,7 +11,7 @@ const mode = modeId;
 const app = document.getElementById('app');
 app.innerHTML = `
 <header class="flex flex-col items-center gap-2 mb-4">
-  <h1 class="text-2xl font-semibold">Betweenle++</h1>
+  <h1 class="text-2xl font-semibold">Sandwichle++</h1>
   <div id="countdown" class="text-sm opacity-75"></div>
   <div id="stats" class="text-sm"></div>
 </header>
@@ -30,7 +30,7 @@ const countdownEl = document.getElementById('countdown');
 const statsEl = document.getElementById('stats');
 const headerEl = document.querySelector('header');
 let categorySelect = null;
-let streak = parseInt(localStorage.getItem('betweenle-streak')||'0',10);
+let streak = parseInt(localStorage.getItem('sandwichle-streak')||'0',10);
 
 function updateStats(){
   statsEl.textContent = `Streak: ${streak}`;
@@ -47,9 +47,9 @@ if (mode === 'words' && module.loadManifest) {
     opt.textContent = info.name;
     categorySelect.appendChild(opt);
   });
-  const stored = localStorage.getItem('betweenle-category');
+  const stored = localStorage.getItem('sandwichle-category');
   categorySelect.value = stored && manifest[stored] ? stored : 'icecream';
-  localStorage.setItem('betweenle-category', categorySelect.value);
+  localStorage.setItem('sandwichle-category', categorySelect.value);
   headerEl.appendChild(categorySelect);
 }
 
@@ -75,14 +75,14 @@ form.addEventListener('submit', e => {
   input.value='';
   if (res.win) {
     streak++;
-    localStorage.setItem('betweenle-streak', streak);
+    localStorage.setItem('sandwichle-streak', streak);
     updateStats();
     const share = encodeShare(game.state.guesses, game.state.targetIdx);
     navigator.clipboard?.writeText(share).catch(()=>{});
     alert('Win!\n'+share);
   } else if (res.lose) {
     streak = 0;
-    localStorage.setItem('betweenle-streak', streak);
+    localStorage.setItem('sandwichle-streak', streak);
     updateStats();
     alert('Lose! Target was '+game.state.target);
   }
@@ -90,7 +90,7 @@ form.addEventListener('submit', e => {
 
 if (mode === 'words' && categorySelect) {
   categorySelect.addEventListener('change', () => {
-    localStorage.setItem('betweenle-category', categorySelect.value);
+    localStorage.setItem('sandwichle-category', categorySelect.value);
     startGame();
   });
 }

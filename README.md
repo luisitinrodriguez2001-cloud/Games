@@ -1,6 +1,6 @@
-# Betweenle++
+# Sandwichle++
 
-A static, mobile-first reimagining of the Betweenle word guessing game with multiple modes (words, numbers, countries, dates, Pokémon).
+A static, mobile-first guessing game where you find the secret entry sandwiched alphabetically between two others, with multiple modes (words, numbers, countries, dates, Pokémon).
 
 ## Development
 
@@ -16,6 +16,6 @@ npm run dev
 - `public/` – standalone app pages and assets.
 - `public/engine/` – reusable game engine modules.
 - `public/data/` – word lists and other domain data.
-- `docs/betweenlepp-spec.md` – design summary.
+- `docs/sandwichlepp-spec.md` – design summary.
 
 The app works offline and seeds the daily puzzle from the UTC date so everyone sees the same challenge.

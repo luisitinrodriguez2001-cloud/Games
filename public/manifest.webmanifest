@@ -1,7 +1,7 @@
 {
-  "name": "Betweenle++",
-  "short_name": "Betweenle++",
-  "start_url": "/public/betweenle.html",
+  "name": "Sandwichle++",
+  "short_name": "Sandwichle++",
+  "start_url": "/public/sandwichle.html",
   "display": "standalone",
   "background_color": "#eef0ff",
   "theme_color": "#ff8c00",

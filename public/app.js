@@ -2,12 +2,14 @@ import {encodeShare} from './engine/share.js';
 import {createBoard} from './board.js';
 import {createKeyboard} from './keyboard.js';
 import {createLetterStrip} from './letter-strip.js';
+import {GUESS_BANDS, BAND_COLORS, getScoreForGuess, getBandForGuess} from './state.js';
 
 const modeId = document.body.dataset.mode;
 const module = await import(`./engine/${modeId}.js`);
 const params = new URLSearchParams(location.search);
 const daily = !params.has('practice');
-const attempts = daily ? 14 : parseInt(params.get('attempts')||'14',10);
+const MAX_ATTEMPTS = GUESS_BANDS.reduce((a,b)=>a+b,0);
+const attempts = daily ? MAX_ATTEMPTS : parseInt(params.get('attempts')||String(MAX_ATTEMPTS),10);
 let game;
 const mode = modeId;
 
@@ -17,6 +19,7 @@ app.innerHTML = `
   <h1 class="text-2xl font-semibold">Sandwichle++</h1>
   <div id="countdown" class="text-sm opacity-75"></div>
   <div id="stats" class="text-sm"></div>
+  <div id="score" class="text-sm"></div>
 </header>
 <main class="flex flex-col h-full">
   <div id="board" class="p-2 border-b border-gray-700"></div>
@@ -27,22 +30,28 @@ app.innerHTML = `
   <div id="letter-strip" class="p-2 border-b border-gray-700"></div>
   <div id="keyboard" class="flex flex-wrap gap-2 justify-center p-2 border-b border-gray-700"></div>
   <div id="feedback" class="text-center text-sm p-2"></div>
-  <div id="attempts" class="text-center text-sm p-2"></div>
+  <div id="attempts" class="text-center text-sm p-2">
+    <div id="attempt-text" class="mb-1"></div>
+    <div id="attempt-circles" class="flex justify-center flex-wrap gap-1"></div>
+  </div>
 </main>`;
 
 const board = createBoard(document.getElementById('board'));
 const feedbackEl = document.getElementById('feedback');
-const attemptsEl = document.getElementById('attempts');
+const attemptTextEl = document.getElementById('attempt-text');
+const attemptCirclesEl = document.getElementById('attempt-circles');
 const form = document.getElementById('composer');
 const guessEl = document.getElementById('guess');
 const submitBtn = form.querySelector('button');
 const countdownEl = document.getElementById('countdown');
 const statsEl = document.getElementById('stats');
+const scoreEl = document.getElementById('score');
 const headerEl = document.querySelector('header');
 let categorySelect = null;
 let streak = parseInt(localStorage.getItem('sandwichle-streak')||'0',10);
 let currentGuess = '';
 let gameOver = false;
+let score = 0;
 const letterStrip = createLetterStrip(document.getElementById('letter-strip'));
 const keyboard = createKeyboard(document.getElementById('keyboard'), {
   onLetter: ch => {
@@ -114,6 +123,8 @@ async function startGame() {
   guessEl.textContent = '';
   gameOver = false;
   submitBtn.disabled = false;
+  score = 0;
+  scoreEl.textContent = `Score: ${score}/5`;
   render();
 }
 
@@ -146,13 +157,19 @@ function submitGuess() {
     streak++;
     localStorage.setItem('sandwichle-streak', streak);
     updateStats();
+    score = getScoreForGuess(game.state.guesses.length);
+    scoreEl.textContent = `Score: ${score}/5`;
+    render();
     const share = encodeShare(game.state.guesses, game.state.targetIdx);
     navigator.clipboard?.writeText(share).catch(()=>{});
     alert('Win!\n'+share);
   } else if (res.lose) {
+    gameOver = true;
+    submitBtn.disabled = true;
     streak = 0;
     localStorage.setItem('sandwichle-streak', streak);
     updateStats();
+    render();
     alert('Lose! Target was '+game.state.target);
   }
 }
@@ -178,8 +195,15 @@ function render() {
     feedbackEl.textContent = '';
   }
 
-  const used = attempts - state.attemptsLeft;
-  attemptsEl.textContent = `Guesses: ${used}/${attempts}`;
+  const used = state.guesses.length;
+  const nextGuess = gameOver ? used : used + 1;
+  attemptTextEl.textContent = `Guess ${nextGuess}/${attempts}`;
+  attemptCirclesEl.innerHTML = '';
+  for (let i = 0; i < attempts; i++) {
+    const circle = document.createElement('span');
+    circle.className = `w-3 h-3 rounded-full ${i < used ? 'bg-gray-700' : BAND_COLORS[getBandForGuess(i+1)]}`;
+    attemptCirclesEl.appendChild(circle);
+  }
   letterStrip.update(state);
   keyboard.update(state, currentGuess);
 }

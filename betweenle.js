@@ -33,7 +33,11 @@ function startGame() {
   resultsBoxes = [];
   updateBoundaries();
   document.getElementById('message').textContent = '';
-  document.getElementById('history').innerHTML = '';
+  const history = document.getElementById('history');
+  history.innerHTML = '';
+  // show initial boundary clues
+  addHistory(startWord);
+  addHistory(endWord);
   updateCounter();
   document.getElementById('submitGuess').disabled = false;
   document.getElementById('guess').disabled = false;
@@ -112,15 +116,37 @@ function endGame(won) {
   try {
     navigator.clipboard.writeText(share);
   } catch {}
+  const streak = updateStreak(won);
   const res = document.getElementById('result');
-  res.innerHTML = `<pre>${share}</pre><a href="${location.href}">${location.href}</a>`;
+  res.innerHTML = `<pre>${share}</pre><div id="streak">Daily Streak: ${streak}</div><a href="${location.href}">${location.href}</a>`;
 }
 
-function addHistory(guess, indicator) {
+function addHistory(guess, indicator = '') {
   const li = document.createElement('li');
   const idx = currentList.indexOf(guess) + 1;
-  li.textContent = `${idx}. ${guess} ${indicator}`;
+  li.textContent = indicator ? `${idx}. ${guess} ${indicator}` : `${idx}. ${guess}`;
   document.getElementById('history').appendChild(li);
+}
+
+function updateStreak(won) {
+  let streak = parseInt(localStorage.getItem('streak') || '0', 10);
+  const today = new Date().toISOString().slice(0, 10);
+  const lastDate = localStorage.getItem('lastDate');
+  if (won) {
+    if (lastDate === today) {
+      // already counted today
+    } else if (lastDate && (new Date(today) - new Date(lastDate) === 86400000)) {
+      streak += 1;
+    } else {
+      streak = 1;
+    }
+    localStorage.setItem('lastDate', today);
+  } else {
+    streak = 0;
+    localStorage.setItem('lastDate', today);
+  }
+  localStorage.setItem('streak', streak);
+  return streak;
 }
 
 document.getElementById('submitGuess').addEventListener('click', submitGuess);
@@ -130,6 +156,17 @@ document.getElementById('guess').addEventListener('keyup', (e) => {
 document.getElementById('wordLength').addEventListener('change', startGame);
 document.getElementById('darkMode').addEventListener('change', (e) => {
   document.body.classList.toggle('dark', e.target.checked);
+});
+document.getElementById('helpBtn').addEventListener('click', () => {
+  document.getElementById('helpModal').style.display = 'block';
+});
+document.getElementById('closeHelp').addEventListener('click', () => {
+  document.getElementById('helpModal').style.display = 'none';
+});
+window.addEventListener('click', (e) => {
+  if (e.target === document.getElementById('helpModal')) {
+    document.getElementById('helpModal').style.display = 'none';
+  }
 });
 
 loadWords();

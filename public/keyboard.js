@@ -21,12 +21,12 @@ export function createKeyboard(container, {onLetter, onEnter, onBackspace} = {})
   back.addEventListener('click', () => onBackspace?.());
   keyboardEl.appendChild(back);
 
-  const enter = document.createElement('button');
-  enter.type = 'button';
-  enter.textContent = 'Enter';
-  enter.className = 'px-2 py-1 rounded bg-green-500 text-gray-900 font-semibold';
-  enter.addEventListener('click', () => onEnter?.());
-  keyboardEl.appendChild(enter);
+  const guess = document.createElement('button');
+  guess.type = 'button';
+  guess.textContent = 'Guess';
+  guess.className = 'px-2 py-1 rounded bg-green-500 text-gray-900 font-semibold';
+  guess.addEventListener('click', () => onEnter?.());
+  keyboardEl.appendChild(guess);
 
   function update(state, guess = '') {
     const topWord = state.list[state.top];
@@ -43,7 +43,7 @@ export function createKeyboard(container, {onLetter, onEnter, onBackspace} = {})
       btn.disabled = disabled;
     }
     back.disabled = len === 0;
-    enter.disabled = len !== 5;
+    guess.disabled = len !== 5;
   }
 
   return {update};

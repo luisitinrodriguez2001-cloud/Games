@@ -20,9 +20,8 @@ app.innerHTML = `
 </header>
 <main class="flex flex-col h-full">
   <div id="board" class="p-2 border-b border-gray-700"></div>
-  <form id="composer" class="flex gap-2 p-2 border-b border-gray-700">
-    <div id="guess" class="flex-1 p-2 rounded bg-gray-800 text-gray-100"></div>
-    <button type="submit" class="px-4 py-2 rounded bg-green-500 text-gray-900 font-semibold">Guess</button>
+  <form id="composer" class="flex p-2 border-b border-gray-700">
+    <input id="guess" type="text" maxlength="5" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" class="flex-1 p-2 rounded bg-gray-800 text-gray-100" />
   </form>
   <div id="letter-strip" class="p-2 border-b border-gray-700"></div>
   <div id="keyboard" class="flex flex-wrap gap-2 justify-center p-2 border-b border-gray-700"></div>
@@ -45,15 +44,17 @@ const letterStrip = createLetterStrip(document.getElementById('letter-strip'));
 const keyboard = createKeyboard(document.getElementById('keyboard'), {
   onLetter: ch => {
     if (currentGuess.length < 5) {
+      clearError();
       currentGuess += ch.toLowerCase();
-      guessEl.textContent = currentGuess.toUpperCase();
+      guessEl.value = currentGuess.toUpperCase();
       keyboard.update(game.state, currentGuess);
     }
   },
   onBackspace: () => {
     if (currentGuess.length) {
+      clearError();
       currentGuess = currentGuess.slice(0, -1);
-      guessEl.textContent = currentGuess.toUpperCase();
+      guessEl.value = currentGuess.toUpperCase();
       keyboard.update(game.state, currentGuess);
     }
   },
@@ -61,6 +62,20 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
     submitGuess();
   }
 });
+
+function showError(msg) {
+  feedbackEl.textContent = msg;
+  feedbackEl.classList.add('text-red-500');
+  feedbackEl.dataset.error = '1';
+}
+
+function clearError() {
+  if (feedbackEl.dataset.error) {
+    feedbackEl.textContent = '';
+    feedbackEl.classList.remove('text-red-500');
+    delete feedbackEl.dataset.error;
+  }
+}
 
 function updateStats(){
   statsEl.textContent = `Streak: ${streak}`;
@@ -90,7 +105,8 @@ async function startGame() {
     game = module.newGame({daily, attempts});
   }
   currentGuess = '';
-  guessEl.textContent = '';
+  guessEl.value = '';
+  guessEl.focus();
   render();
 }
 
@@ -99,16 +115,28 @@ form.addEventListener('submit', e => {
   submitGuess();
 });
 
+guessEl.addEventListener('input', () => {
+  const val = guessEl.value.toLowerCase().replace(/[^a-z]/g,'').slice(0,5);
+  if (val !== currentGuess) {
+    clearError();
+  }
+  currentGuess = val;
+  guessEl.value = currentGuess.toUpperCase();
+  keyboard.update(game.state, currentGuess);
+});
+
 function submitGuess() {
   const val = currentGuess.trim();
   if (val.length !== 5) return;
   const res = game.guess(val);
   if (res.error) {
-    alert('Invalid guess');
+    showError('Invalid guess');
     return;
   }
+  clearError();
   currentGuess = '';
-  guessEl.textContent = '';
+  guessEl.value = '';
+  guessEl.focus();
   render();
   if (res.win) {
     streak++;
@@ -136,6 +164,8 @@ await startGame();
 function render() {
   const state = game.state;
   board.render(state);
+  feedbackEl.classList.remove('text-red-500');
+  delete feedbackEl.dataset.error;
 
   const last = state.guesses[state.guesses.length-1];
   if (last) {

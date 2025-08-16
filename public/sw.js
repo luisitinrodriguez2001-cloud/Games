@@ -1,4 +1,4 @@
-const CACHE = 'betweenlepp-v1';
+const CACHE = 'betweenlepp-v2';
 const ASSETS = [
   '/public/betweenle.html',
   '/public/numbers.html',
@@ -6,7 +6,9 @@ const ASSETS = [
   '/public/dates.html',
   '/public/pokemon.html',
   '/public/app.js',
-  '/public/styles.css'
+  '/public/styles.css',
+  '/public/data/words/manifest.json',
+  '/public/data/words/icecream.json'
 ];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));

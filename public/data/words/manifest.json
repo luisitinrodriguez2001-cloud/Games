@@ -3,9 +3,9 @@
     "file": "./general.json",
     "name": "General 5-letter Words"
   },
-  "ice-cream": {
-    "file": "./ice-cream.json",
-    "name": "Ice-cream Flavors"
+  "icecream": {
+    "file": "./icecream.json",
+    "name": "Icecream Flavors"
   },
   "majors": {
     "file": "./majors.json",

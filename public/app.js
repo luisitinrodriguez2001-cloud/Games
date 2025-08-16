@@ -53,7 +53,8 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
     if (gameOver) return;
     if (currentGuess.length < 5) {
       clearError();
-      currentGuess += ch.toLowerCase();
+      // ch is already lowercase from the keyboard component
+      currentGuess += ch;
       board.render(game.state, currentGuess);
       keyboard.update(game.state, currentGuess);
     }

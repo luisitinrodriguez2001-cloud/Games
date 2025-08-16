@@ -1,5 +1,6 @@
 export function createKeyboard(container, {onLetter, onEnter, onBackspace} = {}) {
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  // use lowercase internally so range comparisons align with the word list
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
   const buttons = {};
   const keyboardEl = container;
   keyboardEl.classList.add('flex', 'flex-wrap', 'gap-2', 'justify-center');
@@ -7,8 +8,10 @@ export function createKeyboard(container, {onLetter, onEnter, onBackspace} = {})
   letters.split('').forEach(ch => {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = ch;
+    // display letters in uppercase for readability
+    btn.textContent = ch.toUpperCase();
     btn.className = 'px-2 py-1 rounded bg-gray-800 text-gray-100';
+    // pass the lowercase letter to the callback
     btn.addEventListener('click', () => onLetter?.(ch));
     buttons[ch] = btn;
     keyboardEl.appendChild(btn);
@@ -36,8 +39,9 @@ export function createKeyboard(container, {onLetter, onEnter, onBackspace} = {})
       const btn = buttons[ch];
       let disabled = len >= 5;
       if (!disabled) {
-        const min = (guess + ch + 'a'.repeat(5 - len - 1));
-        const max = (guess + ch + 'z'.repeat(5 - len - 1));
+        // ch is already lowercase; build bounds using lowercase alphabet
+        const min = guess + ch + 'a'.repeat(5 - len - 1);
+        const max = guess + ch + 'z'.repeat(5 - len - 1);
         if (max <= topWord || min >= bottomWord) disabled = true;
       }
       btn.disabled = disabled;

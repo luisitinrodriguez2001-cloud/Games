@@ -3,175 +3,104 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0f1221" />
-    <title>Word Association — Smooth & Smart</title>
-    <link rel="stylesheet" href="styles.css" />
-    <meta
-      name="description"
-      content="A smooth, mobile-friendly word association game that uses free public APIs (Datamuse, ConceptNet, Free Dictionary) and a built-in list of common words."
-    />
-    <link rel="preconnect" href="https://api.datamuse.com" />
-    <link rel="preconnect" href="https://api.conceptnet.io" />
-    <link rel="preconnect" href="https://api.dictionaryapi.dev" />
+    <title>Mini Game Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg-start: #f7faff;
+        --bg-end: #e2ecf9;
+        --card-bg: rgba(255, 255, 255, 0.8);
+        --card-hover: rgba(255, 255, 255, 1);
+        --text-color: #213547;
+        --accent: #8fbcd4;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      header {
+        text-align: center;
+        padding: 3rem 1rem 1rem;
+      }
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0;
+        opacity: 0.8;
+      }
+
+      main {
+        width: 100%;
+        max-width: 900px;
+        padding: 2rem 1rem 4rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1.5rem;
+      }
+
+      a.card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      }
+
+      a.card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        background: var(--card-hover);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-start: #1e293b;
+          --bg-end: #334155;
+          --card-bg: rgba(255, 255, 255, 0.1);
+          --card-hover: rgba(255, 255, 255, 0.2);
+          --text-color: #f1f5f9;
+          --accent: #7dd3fc;
+        }
+        body {
+          background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+        }
+        a.card {
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+      }
+    </style>
   </head>
   <body>
-    <header class="app-header">
-      <h1>Word Association <span class="emoji">🧠✨</span></h1>
-      <nav class="mode-tabs" role="tablist" aria-label="Game modes">
-        <button
-          class="tab active"
-          data-mode="arcade"
-          role="tab"
-          aria-selected="true"
-        >
-          Arcade
-        </button>
-        <button class="tab" data-mode="timed" role="tab" aria-selected="false">
-          Timed ⏱️
-        </button>
-        <button class="tab" data-mode="daily" role="tab" aria-selected="false">
-          Daily 📅
-        </button>
-        <button id="settingsBtn" class="ghost">Settings ⚙️</button>
-      </nav>
+    <header>
+      <h1>Mini Game Hub</h1>
+      <p>Select a game to start playing</p>
     </header>
-
-    <main class="layout">
-      <section class="panel left">
-        <div class="card">
-          <div class="row spread">
-            <h2 id="roundTitle">New Round</h2>
-            <div class="tiny muted" id="targetMeta"></div>
-          </div>
-          <div class="temperature">
-            <div class="thermo-label">Closeness</div>
-            <div class="thermo-bar">
-              <div id="thermoFill" class="thermo-fill" style="width: 0%"></div>
-            </div>
-            <div id="thermoText" class="thermo-text">—</div>
-          </div>
-
-          <div class="input-row">
-            <input
-              id="guessInput"
-              type="text"
-              placeholder="Type a word and press Enter…"
-              autocomplete="off"
-              aria-label="Enter your guess"
-            />
-            <button id="guessBtn" class="primary">Guess</button>
-          </div>
-
-          <div class="row wrap gap">
-            <button id="hintBtn" class="secondary">Hint 🔎</button>
-            <button id="revealBtn" class="ghost">Reveal 🙈</button>
-            <button id="newRoundBtn" class="ghost">New Round 🔁</button>
-            <button id="shareBtn" class="ghost">Share 📤</button>
-            <button id="downloadBtn" class="ghost">Download CSV ⬇️</button>
-          </div>
-
-          <div id="status" class="status"></div>
-
-          <div class="guess-list" id="guessList" aria-live="polite"></div>
-        </div>
-
-        <div class="card">
-          <h3>Clues</h3>
-          <div id="clues" class="chips"></div>
-          <div class="muted tiny">
-            Clues are top associations for the secret word from Datamuse; each
-            hint costs points.
-          </div>
-        </div>
-      </section>
-
-      <section class="panel right">
-        <div class="card">
-          <h3>Round Info</h3>
-          <ul class="meta">
-            <li>Mode: <span id="modeMeta">Arcade</span></li>
-            <li>Timer: <span id="timerMeta">—</span></li>
-            <li>Guesses: <span id="guessesMeta">0</span></li>
-            <li>Hints used: <span id="hintsMeta">0</span></li>
-            <li>Score: <span id="scoreMeta">0</span></li>
-            <li>Target part of speech: <span id="posMeta">—</span></li>
-          </ul>
-        </div>
-
-        <div class="card">
-          <h3>Definition</h3>
-          <div id="definition" class="definition">—</div>
-        </div>
-
-        <div class="card">
-          <h3>Stats</h3>
-          <ul class="meta">
-            <li>Games played: <span id="gamesPlayed">0</span></li>
-            <li>Win rate: <span id="winRate">0%</span></li>
-            <li>Current streak (Daily): <span id="dailyStreak">0</span></li>
-            <li>Best time: <span id="bestTime">—</span></li>
-            <li>Average guesses: <span id="avgGuesses">—</span></li>
-          </ul>
-        </div>
-
-        <div class="card">
-          <h3>API Diagnostics</h3>
-          <div id="apiDiag" class="tiny mono"></div>
-        </div>
-      </section>
+    <main>
+      <a class="card" href="betweenle.html">Betweenle Plus</a>
+      <a class="card" href="public/betweenle.html">Betweenle++ Words</a>
+      <a class="card" href="public/dates.html">Betweenle++ Dates</a>
+      <a class="card" href="public/countries.html">Betweenle++ Countries</a>
+      <a class="card" href="public/pokemon.html">Betweenle++ Pokémon</a>
+      <a class="card" href="public/numbers.html">Betweenle++ Numbers</a>
     </main>
-
-    <dialog id="settingsDialog">
-      <form method="dialog" class="settings">
-        <h3>Settings</h3>
-        <label
-          ><input type="checkbox" id="toggleConceptNet" checked /> Use
-          ConceptNet for closeness</label
-        >
-        <label
-          ><input type="checkbox" id="toggleDictionary" checked /> Show
-          definitions from Free Dictionary</label
-        >
-        <label
-          ><input type="checkbox" id="toggleDatamuse" checked /> Use Datamuse
-          for clues</label
-        >
-        <label
-          ><input type="checkbox" id="toggleRandomWord" checked /> Use common
-          word list to pick targets</label
-        >
-        <label
-          ><input type="checkbox" id="toggleStrictValidation" /> Strict guess
-          validation (must be a real word)</label
-        >
-        <label
-          ><input type="checkbox" id="toggleColorBlind" /> Color-blind friendly
-          palette</label
-        >
-        <menu>
-          <button value="cancel" class="ghost">Close</button>
-          <button id="resetStatsBtn" class="secondary">Reset Stats</button>
-        </menu>
-      </form>
-    </dialog>
-
-    <footer class="app-footer">
-      <div class="tiny">
-        Data from
-        <a href="https://www.datamuse.com/api/" target="_blank" rel="noopener"
-          >Datamuse</a
-        >
-        •
-        <a href="https://dictionaryapi.dev/" target="_blank" rel="noopener"
-          >Free Dictionary API</a
-        >
-        •
-        <a href="https://conceptnet.io/" target="_blank" rel="noopener"
-          >ConceptNet</a
-        >
-      </div>
-    </footer>
-
-    <script src="app.js" defer></script>
   </body>
 </html>

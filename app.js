@@ -1,5 +1,5 @@
 // Word Association Game — CodePen-ready
-// Uses: Datamuse API (clues), ConceptNet (semantic closeness), Free Dictionary (definitions), Random Word API (targets)
+// Uses: Datamuse API (clues), ConceptNet (semantic closeness), Free Dictionary (definitions), and a local common word list for targets
 // All endpoints are public and require no API keys. Network failures gracefully degrade with fallbacks.
 
 (() => {
@@ -129,27 +129,38 @@
     return { pos, text: defs };
   }
   // Random target word (noun/adj preferred). Fallback: Datamuse pattern.
-  async function randomWord() {
+  let commonWordPool = null;
+  async function loadCommonWords() {
+    if (commonWordPool) return commonWordPool;
     try {
-      const j = await fetchJSON(
-        "https://random-word-api.herokuapp.com/word?number=1",
-        "RW",
-      );
-      if (Array.isArray(j) && j[0]) return sanitizeWord(j[0]);
-    } catch {}
-    // Fallback via Datamuse: pick random 5-8 letter common word
-    const len = 5 + Math.floor(Math.random() * 4);
+      const res = await fetch("common_words.txt");
+      const txt = await res.text();
+      commonWordPool = txt
+        .split(/\r?\n/)
+        .map((w) => sanitizeWord(w))
+        .filter((w) => w.length >= 4 && w.length <= 8);
+    } catch {
+      commonWordPool = [];
+    }
+    return commonWordPool;
+  }
+  async function randomWord() {
+    const pool = await loadCommonWords();
+    if (pool.length)
+      return pool[Math.floor(Math.random() * pool.length)];
+    // Fallback via Datamuse: pick random 4-6 letter common word
+    const len = 4 + Math.floor(Math.random() * 3);
     const pattern = "?".repeat(len);
     try {
       const j = await fetchJSON(
         `https://api.datamuse.com/words?sp=${pattern}&max=1000&md=f`,
         "DM",
       );
-      const pool = j.filter(
-        (w) => (w.score ?? 0) > 10000 && /^[a-z]+$/.test(w.word),
+      const pool2 = j.filter(
+        (w) => (w.score ?? 0) > 20000 && /^[a-z]+$/.test(w.word),
       );
-      if (pool.length)
-        return sanitizeWord(pool[Math.floor(Math.random() * pool.length)].word);
+      if (pool2.length)
+        return sanitizeWord(pool2[Math.floor(Math.random() * pool2.length)].word);
     } catch {}
     return "planet";
   }

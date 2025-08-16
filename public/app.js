@@ -1,5 +1,6 @@
 import {encodeShare} from './engine/share.js';
 import {createBoard} from './board.js';
+import {createKeyboard} from './keyboard.js';
 
 const modeId = document.body.dataset.mode;
 const module = await import(`./engine/${modeId}.js`);
@@ -19,9 +20,10 @@ app.innerHTML = `
 <main class="flex flex-col h-full">
   <div id="board" class="p-2 border-b border-gray-700"></div>
   <form id="composer" class="flex gap-2 p-2 border-b border-gray-700">
-    <input aria-label="Guess" autocomplete="off" class="flex-1 p-2 rounded bg-gray-800 text-gray-100" />
+    <div id="guess" class="flex-1 p-2 rounded bg-gray-800 text-gray-100"></div>
     <button type="submit" class="px-4 py-2 rounded bg-green-500 text-gray-900 font-semibold">Guess</button>
   </form>
+  <div id="keyboard" class="flex flex-wrap gap-2 justify-center p-2 border-b border-gray-700"></div>
   <div id="feedback" class="text-center text-sm p-2"></div>
   <div id="attempts" class="text-center text-sm p-2"></div>
 </main>`;
@@ -30,12 +32,32 @@ const board = createBoard(document.getElementById('board'));
 const feedbackEl = document.getElementById('feedback');
 const attemptsEl = document.getElementById('attempts');
 const form = document.getElementById('composer');
-const input = form.querySelector('input');
+const guessEl = document.getElementById('guess');
 const countdownEl = document.getElementById('countdown');
 const statsEl = document.getElementById('stats');
 const headerEl = document.querySelector('header');
 let categorySelect = null;
 let streak = parseInt(localStorage.getItem('sandwichle-streak')||'0',10);
+let currentGuess = '';
+const keyboard = createKeyboard(document.getElementById('keyboard'), {
+  onLetter: ch => {
+    if (currentGuess.length < 5) {
+      currentGuess += ch.toLowerCase();
+      guessEl.textContent = currentGuess.toUpperCase();
+      keyboard.update(game.state, currentGuess);
+    }
+  },
+  onBackspace: () => {
+    if (currentGuess.length) {
+      currentGuess = currentGuess.slice(0, -1);
+      guessEl.textContent = currentGuess.toUpperCase();
+      keyboard.update(game.state, currentGuess);
+    }
+  },
+  onEnter: () => {
+    submitGuess();
+  }
+});
 
 function updateStats(){
   statsEl.textContent = `Streak: ${streak}`;
@@ -64,20 +86,27 @@ async function startGame() {
   } else {
     game = module.newGame({daily, attempts});
   }
+  currentGuess = '';
+  guessEl.textContent = '';
   render();
 }
 
 form.addEventListener('submit', e => {
   e.preventDefault();
-  const val = input.value.trim();
-  if (!val) return;
+  submitGuess();
+});
+
+function submitGuess() {
+  const val = currentGuess.trim();
+  if (val.length !== 5) return;
   const res = game.guess(val);
   if (res.error) {
     alert('Invalid guess');
     return;
   }
+  currentGuess = '';
+  guessEl.textContent = '';
   render();
-  input.value='';
   if (res.win) {
     streak++;
     localStorage.setItem('sandwichle-streak', streak);
@@ -91,7 +120,7 @@ form.addEventListener('submit', e => {
     updateStats();
     alert('Lose! Target was '+game.state.target);
   }
-});
+}
 
 if (mode === 'words' && categorySelect) {
   categorySelect.addEventListener('change', () => {
@@ -115,6 +144,7 @@ function render() {
 
   const used = attempts - state.attemptsLeft;
   attemptsEl.textContent = `Guesses: ${used}/${attempts}`;
+  keyboard.update(state, currentGuess);
 }
 
 function updateCountdown(){

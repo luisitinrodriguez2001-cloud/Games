@@ -17,7 +17,7 @@ app.innerHTML = `
 </header>
 <main class="flex flex-col h-full">
   <div id="log" role="log" aria-live="polite" class="flex-1 overflow-y-auto mb-4 space-y-1"></div>
-  <form id="composer" class="flex gap-2">
+  <form id="composer" class="flex gap-2 p-2 border-b border-gray-700">
     <input aria-label="Guess" autocomplete="off" class="flex-1 p-2 rounded bg-gray-800 text-gray-100" />
     <button type="submit" class="px-4 py-2 rounded bg-green-500 text-gray-900 font-semibold">Guess</button>
   </form>
@@ -99,24 +99,29 @@ await startGame();
 function render() {
   const state = game.state;
   log.innerHTML='';
-  const items = [
-    {label: state.list[state.top], info:'', cls:'guess-row bound'}
-  ];
+
+  const topRow = document.createElement('div');
+  topRow.className = 'guess-row bound flex justify-between p-2 border-b border-gray-700';
+  topRow.innerHTML = `<span>${state.list[state.top]}</span><span></span>`;
+  log.appendChild(topRow);
+
   state.guesses.forEach((g,i)=>{
     const arrow = g.idx < state.targetIdx ? '↑' : g.idx > state.targetIdx ? '↓' : '🎯';
-    items.push({label: state.list[g.idx], info:`${g.distance}% ${arrow}`, cls:'guess-row'+(i===state.closestIdx?' closest':'')});
-  });
-  items.push({label: state.list[state.bottom], info:'', cls:'guess-row bound'});
-  items.forEach(it=>{
     const row = document.createElement('div');
-    row.className = `${it.cls} flex justify-between p-2 border-b border-gray-700`;
-    if (it.cls.includes('closest')) {
-      row.classList.add('text-purple-400');
-    }
-    row.innerHTML = `<span>${it.label}</span><span>${it.info}</span>`;
+    row.className = 'guess-row flex justify-between p-2 border-b border-gray-700';
+    if (i===state.closestIdx) row.classList.add('closest','text-purple-400');
+    row.innerHTML = `<span>${state.list[g.idx]}</span><span>${g.distance}% ${arrow}</span>`;
     log.appendChild(row);
   });
-  log.lastElementChild?.scrollIntoView({behavior:'smooth', block:'end'});
+
+  log.appendChild(form);
+
+  const bottomRow = document.createElement('div');
+  bottomRow.className = 'guess-row bound flex justify-between p-2 border-b border-gray-700';
+  bottomRow.innerHTML = `<span>${state.list[state.bottom]}</span><span></span>`;
+  log.appendChild(bottomRow);
+
+  bottomRow.scrollIntoView({behavior:'smooth', block:'end'});
 }
 
 function updateCountdown(){

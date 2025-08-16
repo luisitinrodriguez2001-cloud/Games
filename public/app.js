@@ -1,4 +1,5 @@
 import {encodeShare} from './engine/share.js';
+import {createBoard} from './board.js';
 
 const modeId = document.body.dataset.mode;
 const module = await import(`./engine/${modeId}.js`);
@@ -16,18 +17,16 @@ app.innerHTML = `
   <div id="stats" class="text-sm"></div>
 </header>
 <main class="flex flex-col h-full">
-  <div id="top" class="text-center p-2 border-b border-gray-700"></div>
+  <div id="board" class="p-2 border-b border-gray-700"></div>
   <form id="composer" class="flex gap-2 p-2 border-b border-gray-700">
     <input aria-label="Guess" autocomplete="off" class="flex-1 p-2 rounded bg-gray-800 text-gray-100" />
     <button type="submit" class="px-4 py-2 rounded bg-green-500 text-gray-900 font-semibold">Guess</button>
   </form>
-  <div id="bottom" class="text-center p-2 border-b border-gray-700"></div>
   <div id="feedback" class="text-center text-sm p-2"></div>
   <div id="attempts" class="text-center text-sm p-2"></div>
 </main>`;
 
-const topEl = document.getElementById('top');
-const bottomEl = document.getElementById('bottom');
+const board = createBoard(document.getElementById('board'));
 const feedbackEl = document.getElementById('feedback');
 const attemptsEl = document.getElementById('attempts');
 const form = document.getElementById('composer');
@@ -104,12 +103,11 @@ await startGame();
 
 function render() {
   const state = game.state;
-  topEl.textContent = state.list[state.top];
-  bottomEl.textContent = state.list[state.bottom];
+  board.render(state);
 
   const last = state.guesses[state.guesses.length-1];
   if (last) {
-    const arrow = last.idx < state.targetIdx ? '↑' : last.idx > state.targetIdx ? '↓' : '🎯';
+    const arrow = last.idx < state.targetIdx ? '↑' : last.idx > state.targetIdx ? '↓' : '';
     feedbackEl.textContent = `Index: ${last.idx} ${arrow}`;
   } else {
     feedbackEl.textContent = '';

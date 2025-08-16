@@ -1,6 +1,7 @@
 import {encodeShare} from './engine/share.js';
 import {createBoard} from './board.js';
 import {createKeyboard} from './keyboard.js';
+import {createLetterStrip} from './letter-strip.js';
 
 const modeId = document.body.dataset.mode;
 const module = await import(`./engine/${modeId}.js`);
@@ -23,6 +24,7 @@ app.innerHTML = `
     <div id="guess" class="flex-1 p-2 rounded bg-gray-800 text-gray-100"></div>
     <button type="submit" class="px-4 py-2 rounded bg-green-500 text-gray-900 font-semibold">Guess</button>
   </form>
+  <div id="letter-strip" class="p-2 border-b border-gray-700"></div>
   <div id="keyboard" class="flex flex-wrap gap-2 justify-center p-2 border-b border-gray-700"></div>
   <div id="feedback" class="text-center text-sm p-2"></div>
   <div id="attempts" class="text-center text-sm p-2"></div>
@@ -39,6 +41,7 @@ const headerEl = document.querySelector('header');
 let categorySelect = null;
 let streak = parseInt(localStorage.getItem('sandwichle-streak')||'0',10);
 let currentGuess = '';
+const letterStrip = createLetterStrip(document.getElementById('letter-strip'));
 const keyboard = createKeyboard(document.getElementById('keyboard'), {
   onLetter: ch => {
     if (currentGuess.length < 5) {
@@ -144,6 +147,7 @@ function render() {
 
   const used = attempts - state.attemptsLeft;
   attemptsEl.textContent = `Guesses: ${used}/${attempts}`;
+  letterStrip.update(state);
   keyboard.update(state, currentGuess);
 }
 

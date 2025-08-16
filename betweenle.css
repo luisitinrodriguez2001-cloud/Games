@@ -1,0 +1,30 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+  background: #f0f0f0;
+  color: #222;
+}
+body.dark {
+  background: #222;
+  color: #f0f0f0;
+}
+#boundaries {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px auto;
+  max-width: 400px;
+  font-size: 1.2em;
+}
+#guessArea {
+  margin: 20px;
+}
+#guess {
+  text-transform: lowercase;
+}
+#history {
+  list-style: none;
+  padding: 0;
+}
+#history li {
+  margin: 5px 0;
+}

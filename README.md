@@ -32,6 +32,12 @@ No API keys are needed.
 - `styles.css` — modern gradient background, accessible palette, color-blind toggle.
 - `app.js` — all logic, including API clients, hot/cold scoring, CSV export, daily streaks, and graceful fallbacks. Includes a common word list loader for simpler targets.
 
+## Betweenle Plus
+
+A lightweight, ad-free clone of the Betweenle word guessing game.
+Options include selectable word length (4-6 letters) and a dark mode toggle.
+Load `betweenle.html` in a browser to play.
+
 ## Notes
 
 - ConceptNet relatedness values are typically ~0.05–0.40 for loosely related words; thresholds are tuned in code but easily adjustable.

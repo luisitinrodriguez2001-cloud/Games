@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Betweenle Plus</title>
+  <link rel="stylesheet" href="betweenle.css">
+</head>
+<body>
+  <h1>Betweenle Plus</h1>
+  <div id="options">
+    <label for="wordLength">Word Length:</label>
+    <select id="wordLength">
+      <option value="4">4</option>
+      <option value="5" selected>5</option>
+      <option value="6">6</option>
+    </select>
+    <label><input type="checkbox" id="darkMode"> Dark Mode</label>
+  </div>
+  <div id="boundaries">
+    <span id="startWord">-----</span>
+    <span id="endWord">-----</span>
+  </div>
+  <div id="guessArea">
+    <input id="guess" placeholder="Your guess" maxlength="5" />
+    <button id="submitGuess">Guess</button>
+  </div>
+  <div id="message"></div>
+  <ul id="history"></ul>
+  <script src="betweenle.js"></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 import {createEngine} from './core.js';
 import {yyyyMMddUTC, seedOf, rng} from './seed.js';
 
-const MANIFEST_URL = './data/words/manifest.json';
+const MANIFEST_URL = new URL('../data/words/manifest.json', import.meta.url);
 let manifestCache = null;
 
 export async function loadManifest() {
@@ -15,7 +15,8 @@ async function loadList(slug) {
   const manifest = await loadManifest();
   const info = manifest[slug];
   if (!info) throw new Error('Unknown category');
-  const data = await fetch(info.file).then(r => r.json());
+  const dataUrl = new URL(info.file, MANIFEST_URL);
+  const data = await fetch(dataUrl).then(r => r.json());
   let list;
   if (Array.isArray(data)) {
     // simple string list

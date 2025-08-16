@@ -25,10 +25,17 @@ async function loadList(slug) {
     // array of objects with name fields
     list = (data.words || data).map(obj => obj.name || obj);
   }
-  const norm = list.map(s => s.normalize('NFC').toLowerCase());
+  const norm = list
+    .map(s => s.normalize('NFC').toLowerCase())
+    .filter(w => /^[a-z]+$/.test(w));
   const uniq = Array.from(new Set(norm));
-  uniq.sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'}));
-  return {list: uniq, info};
+  const targetLen = uniq[0]?.length || 0;
+  const filtered = uniq.filter(w => w.length === targetLen);
+  if (filtered.length < 100) {
+    throw new Error('Category requires at least 100 single words of equal length');
+  }
+  filtered.sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'}));
+  return {list: filtered, info};
 }
 
 const SALT = import.meta.env?.VITE_WORDS_SALT || 'words';

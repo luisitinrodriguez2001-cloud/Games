@@ -1,0 +1,13 @@
+apple
+candy
+delta
+eagle
+fruit
+mango
+piano
+robot
+snake
+tiger
+ultra
+whale
+zesty

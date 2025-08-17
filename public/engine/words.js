@@ -44,6 +44,17 @@ async function loadList(slug) {
   if (filtered.length !== uniq.length) {
     throw new Error('Category requires all words to be the same length');
   }
+  try {
+    const extra = JSON.parse(localStorage.getItem(`sandwichle-custom-${slug}`) || '[]');
+    extra.forEach(w => {
+      const v = w.normalize('NFC').toLowerCase();
+      if (v.length === targetLen && /^[a-z]+$/.test(v) && !filtered.includes(v)) {
+        filtered.push(v);
+      }
+    });
+  } catch (e) {
+    // ignore
+  }
   filtered.sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'}));
   return {list: filtered, info};
 }

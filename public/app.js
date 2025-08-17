@@ -2,7 +2,7 @@ import {encodeShare} from './engine/share.js';
 import {createBoard} from './board.js';
 import {createKeyboard} from './keyboard.js';
 import {createLetterStrip} from './letter-strip.js';
-import {GUESS_BANDS, BAND_COLORS, getScoreForGuess, getBandForGuess} from './state.js';
+import {GUESS_BANDS, BAND_COLORS, getBandForGuess} from './state.js';
 import {createResultsModal} from './results.js';
 
 const modeId = document.body.dataset.mode;
@@ -18,27 +18,23 @@ const app = document.getElementById('app');
 app.innerHTML = `
 <header class="flex flex-col items-center gap-2 mb-4">
   <h1 class="text-2xl font-semibold">Sandwichle++</h1>
-  <div id="countdown" class="text-sm opacity-75"></div>
-  <div id="score" class="text-sm"></div>
+  <div id="attempts" class="text-center text-sm">
+    <div id="attempt-text" class="mb-1"></div>
+    <div id="attempt-circles" class="flex justify-center flex-wrap gap-1"></div>
+  </div>
 </header>
 <main class="flex flex-col h-full">
   <div id="board" class="p-2 border-b border-gray-700"></div>
   <div id="letter-strip" class="p-2 border-b border-gray-700"></div>
   <div id="keyboard" class="flex flex-wrap gap-2 justify-center p-2 border-b border-gray-700"></div>
-  <div id="controls" class="flex flex-col gap-2 p-2"></div>
   <div id="feedback" class="text-center text-sm p-2"></div>
-  <div id="attempts" class="text-center text-sm p-2">
-    <div id="attempt-text" class="mb-1"></div>
-    <div id="attempt-circles" class="flex justify-center flex-wrap gap-1"></div>
-  </div>
+  <div id="controls" class="flex flex-col gap-2 p-2"></div>
 </main>`;
 
 const board = createBoard(document.getElementById('board'));
 const feedbackEl = document.getElementById('feedback');
 const attemptTextEl = document.getElementById('attempt-text');
 const attemptCirclesEl = document.getElementById('attempt-circles');
-const countdownEl = document.getElementById('countdown');
-const scoreEl = document.getElementById('score');
 const headerEl = document.querySelector('header');
 const controlsEl = document.getElementById('controls');
 let categorySelect = null;
@@ -46,7 +42,6 @@ let streak = parseInt(localStorage.getItem('sandwichle-streak')||'0',10);
 let trophies = parseInt(localStorage.getItem('sandwichle-trophies')||'0',10);
 let currentGuess = '';
 let gameOver = false;
-let score = 0;
 const letterStrip = createLetterStrip(document.getElementById('letter-strip'));
 const keyboard = createKeyboard(document.getElementById('keyboard'), {
   onLetter: ch => {
@@ -75,8 +70,25 @@ const keyboard = createKeyboard(document.getElementById('keyboard'), {
 });
 const resultsModal = createResultsModal();
 
-function showError(msg) {
-  feedbackEl.textContent = msg;
+function showError(msg, guess) {
+  feedbackEl.textContent = '';
+  const span = document.createElement('span');
+  span.textContent = msg;
+  feedbackEl.appendChild(span);
+  if (guess) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = '?';
+    btn.className = 'ml-2 underline';
+    btn.addEventListener('click', () => {
+      if (confirm('Do you believe this word is in the category and should be added?')) {
+        addWordToCategory(guess);
+        const res = game.guess(guess);
+        handleResult(res);
+      }
+    });
+    feedbackEl.appendChild(btn);
+  }
   feedbackEl.classList.add('text-red-500');
   feedbackEl.dataset.error = '1';
 }
@@ -93,6 +105,67 @@ function saveHistory(win, guesses) {
   const history = JSON.parse(localStorage.getItem('sandwichle-history') || '[]');
   history.push({win, guesses});
   localStorage.setItem('sandwichle-history', JSON.stringify(history));
+}
+
+function addWordToCategory(word) {
+  const cat = categorySelect ? categorySelect.value : 'general';
+  const key = `sandwichle-custom-${cat}`;
+  const stored = JSON.parse(localStorage.getItem(key) || '[]');
+  if (!stored.includes(word)) {
+    stored.push(word);
+    localStorage.setItem(key, JSON.stringify(stored));
+  }
+  const list = game.state.list;
+  let idx = list.findIndex(w => w > word);
+  if (idx === -1) idx = list.length;
+  list.splice(idx, 0, word);
+  if (idx <= game.state.targetIdx) game.state.targetIdx++;
+  if (idx <= game.state.top) game.state.top++;
+  if (idx <= game.state.bottom) game.state.bottom++;
+  game.state.guesses.forEach(g => { if (idx <= g.idx) g.idx++; });
+}
+
+function handleResult(res) {
+  const arrow = res.cmp < 0 ? '↑' : res.cmp > 0 ? '↓' : '';
+  const lastGuess = res.state.guesses[res.state.guesses.length-1];
+  lastGuess.arrow = arrow;
+  lastGuess.win = res.win;
+  clearError();
+  currentGuess = '';
+  render();
+  if (res.win) {
+    gameOver = true;
+    streak++;
+    trophies += module.trophyReward ?? 1;
+    localStorage.setItem('sandwichle-streak', streak);
+    localStorage.setItem('sandwichle-trophies', trophies);
+    render();
+    saveHistory(true, game.state.guesses.length);
+    const share = encodeShare(game.state.guesses, game.state.targetIdx);
+    resultsModal.show({
+      win: true,
+      target: game.state.target,
+      trophies,
+      guessesUsed: game.state.guesses.length,
+      streak,
+      share
+    });
+  } else if (res.lose) {
+    gameOver = true;
+    streak = 0;
+    localStorage.setItem('sandwichle-streak', streak);
+    render();
+    saveHistory(false, game.state.guesses.length);
+    const share = encodeShare(game.state.guesses, game.state.targetIdx);
+    resultsModal.show({
+      win: false,
+      target: game.state.target,
+      trophies,
+      guessesUsed: game.state.guesses.length,
+      streak,
+      share
+    });
+  }
 }
 
 
@@ -179,10 +252,8 @@ async function startGame() {
   attempts = game.state.guesses.length + game.state.attemptsLeft;
   currentGuess = '';
   gameOver = false;
-  score = 0;
   hintLevel = 0;
   revealedLetters = 0;
-  scoreEl.textContent = `Score: ${score}/5`;
   render();
 }
 function submitGuess() {
@@ -191,51 +262,14 @@ function submitGuess() {
   if (val.length !== 5) return;
   const res = game.guess(val);
   if (res.error) {
-    showError('Invalid guess');
+    if (mode === 'words') {
+      showError('This word is not in this category', val);
+    } else {
+      showError('Invalid guess');
+    }
     return;
   }
-  const arrow = res.cmp < 0 ? '↑' : res.cmp > 0 ? '↓' : '';
-  const lastGuess = res.state.guesses[res.state.guesses.length-1];
-  lastGuess.arrow = arrow;
-  lastGuess.win = res.win;
-  clearError();
-  currentGuess = '';
-  render();
-  if (res.win) {
-    gameOver = true;
-    streak++;
-    trophies += module.trophyReward ?? 1;
-    localStorage.setItem('sandwichle-streak', streak);
-    localStorage.setItem('sandwichle-trophies', trophies);
-    score = getScoreForGuess(game.state.guesses.length);
-    scoreEl.textContent = `Score: ${score}/5`;
-    render();
-    saveHistory(true, game.state.guesses.length);
-    const share = encodeShare(game.state.guesses, game.state.targetIdx);
-    resultsModal.show({
-      win: true,
-      target: game.state.target,
-      trophies,
-      guessesUsed: game.state.guesses.length,
-      streak,
-      share
-    });
-  } else if (res.lose) {
-    gameOver = true;
-    streak = 0;
-    localStorage.setItem('sandwichle-streak', streak);
-    render();
-    saveHistory(false, game.state.guesses.length);
-    const share = encodeShare(game.state.guesses, game.state.targetIdx);
-    resultsModal.show({
-      win: false,
-      target: game.state.target,
-      trophies,
-      guessesUsed: game.state.guesses.length,
-      streak,
-      share
-    });
-  }
+  handleResult(res);
 }
 
 if (mode === 'words' && categorySelect) {
@@ -271,16 +305,4 @@ function render() {
   letterStrip.update(state);
   keyboard.update(state, currentGuess);
 }
-
-function updateCountdown(){
-  const now = new Date();
-  const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()+1));
-  const diff = next - now;
-  const h = String(Math.floor(diff/3600000)).padStart(2,'0');
-  const m = String(Math.floor(diff%3600000/60000)).padStart(2,'0');
-  const s = String(Math.floor(diff%60000/1000)).padStart(2,'0');
-  countdownEl.textContent = `Next puzzle in ${h}:${m}:${s}`;
-}
-setInterval(updateCountdown,1000);
-updateCountdown();
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }

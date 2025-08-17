@@ -111,7 +111,8 @@ if (mode === 'words' && module.loadManifest) {
     categorySelect.appendChild(opt);
   });
   const stored = localStorage.getItem('sandwichle-category');
-  categorySelect.value = stored && manifest[stored] ? stored : 'icecream';
+  const defaultCat = Object.keys(manifest)[0];
+  categorySelect.value = stored && manifest[stored] ? stored : defaultCat;
   localStorage.setItem('sandwichle-category', categorySelect.value);
   headerEl.appendChild(categorySelect);
 }

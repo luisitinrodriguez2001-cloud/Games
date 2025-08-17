@@ -1,4 +1,4 @@
-const CACHE = 'sandwichlepp-v2';
+const CACHE = 'sandwichlepp-v3';
 const ASSETS = [
   '/public/sandwichle.html',
   '/public/numbers.html',
@@ -7,8 +7,7 @@ const ASSETS = [
   '/public/pokemon.html',
   '/public/app.js',
   '/public/styles.css',
-  '/public/data/words/manifest.json',
-  '/public/data/words/icecream.json'
+  '/public/data/words/manifest.json'
 ];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));

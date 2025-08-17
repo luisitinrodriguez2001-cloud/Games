@@ -9,8 +9,8 @@ const modeId = document.body.dataset.mode;
 const module = await import(`./engine/${modeId}.js`);
 const params = new URLSearchParams(location.search);
 const daily = !params.has('practice');
-const MAX_ATTEMPTS = GUESS_BANDS.reduce((a,b)=>a+b,0);
-const attempts = daily ? MAX_ATTEMPTS : parseInt(params.get('attempts')||String(MAX_ATTEMPTS),10);
+const DEFAULT_MAX_ATTEMPTS = GUESS_BANDS.reduce((a,b)=>a+b,0);
+let attempts;
 let game;
 const mode = modeId;
 
@@ -118,10 +118,12 @@ if (mode === 'words' && module.loadManifest) {
 
 async function startGame() {
   if (mode === 'words' && categorySelect) {
-    game = await module.newGame({daily, attempts, category: categorySelect.value});
+    game = await module.newGame({daily, category: categorySelect.value});
   } else {
-    game = module.newGame({daily, attempts});
+    const max = daily ? DEFAULT_MAX_ATTEMPTS : parseInt(params.get('attempts')||String(DEFAULT_MAX_ATTEMPTS),10);
+    game = await module.newGame({daily, attempts: max});
   }
+  attempts = game.state.guesses.length + game.state.attemptsLeft;
   currentGuess = '';
   gameOver = false;
   score = 0;
@@ -147,7 +149,7 @@ function submitGuess() {
   if (res.win) {
     gameOver = true;
     streak++;
-    trophies++;
+    trophies += module.trophyReward ?? 1;
     localStorage.setItem('sandwichle-streak', streak);
     localStorage.setItem('sandwichle-trophies', trophies);
     updateStats();

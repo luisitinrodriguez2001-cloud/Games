@@ -131,24 +131,43 @@ hintBtn.addEventListener('click', async () => {
       const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${target}`);
       const data = await res.json();
       const definition = data[0]?.meanings?.[0]?.definitions?.[0]?.definition;
-      alert(definition ? `Definition: ${definition}` : 'No definition found.');
+      alert(
+        definition
+          ? `Definition: ${definition}\n(Note: definition may refer to a different sense of the word.)`
+          : 'No definition found.'
+      );
     } else if (hintLevel === 1) {
-      alert(`First letter: ${target[0].toUpperCase()}`);
-    } else if (hintLevel === 2) {
       const res = await fetch(`https://api.datamuse.com/words?rel_syn=${target}&max=5`);
       const data = await res.json();
       const syns = data.map(w => w.word).filter(Boolean);
-      alert(syns.length ? `Synonyms: ${syns.slice(0,3).join(', ')}` : 'No synonyms found.');
-    } else {
-      alert('No more hints available.');
-      return;
+      alert(
+        syns.length
+          ? `Synonyms: ${syns.slice(0,3).join(', ')}\n(Note: synonyms may refer to a different sense of the word.)`
+          : 'No synonyms found.'
+      );
     }
-    hintLevel++;
+    hintLevel = (hintLevel + 1) % 2;
   } catch (err) {
     alert('Error fetching hint.');
   }
 });
 controlsEl.appendChild(hintBtn);
+
+const revealLetterBtn = document.createElement('button');
+revealLetterBtn.textContent = 'Reveal Letter';
+revealLetterBtn.className = 'w-full p-2 rounded bg-purple-500 text-gray-900';
+let revealedLetters = 0;
+revealLetterBtn.addEventListener('click', () => {
+  if (!game || !game.state?.target) return;
+  const target = game.state.target.toUpperCase();
+  if (revealedLetters < target.length) {
+    revealedLetters++;
+    alert(`Revealed letters: ${target.slice(0, revealedLetters)}`);
+  } else {
+    alert('All letters revealed.');
+  }
+});
+controlsEl.appendChild(revealLetterBtn);
 
 async function startGame() {
   if (mode === 'words' && categorySelect) {
@@ -162,6 +181,7 @@ async function startGame() {
   gameOver = false;
   score = 0;
   hintLevel = 0;
+  revealedLetters = 0;
   scoreEl.textContent = `Score: ${score}/5`;
   render();
 }

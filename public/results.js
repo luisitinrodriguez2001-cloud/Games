@@ -52,7 +52,10 @@ export function createResultsModal() {
     trophyEl.textContent = `🏆 ${trophies}`;
     guessesEl.textContent = `Guesses: ${guessesUsed}`;
     streakEl.textContent = `Streak: ${streak}`;
-    shareText = share;
+    const verb = win ? 'guessed' : 'tried';
+    const targetText = target ? ` ${target.toUpperCase()}` : '';
+    const link = `${location.origin}${location.pathname}`;
+    shareText = `Sandwichle++ — I ${verb}${targetText} in ${guessesUsed} guesses.\n${share}\n\nPlay: ${link}`;
     overlay.classList.remove('hidden');
   }
 

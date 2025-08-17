@@ -1,26 +1,26 @@
 {
   "general": {
-    "file": "./general.json",
+    "file": "./general.csv",
     "name": "General 5-letter Words"
   },
   "icecream": {
-    "file": "./icecream.json",
+    "file": "./icecream.csv",
     "name": "Icecream Flavors"
   },
   "majors": {
-    "file": "./majors.json",
+    "file": "./majors.csv",
     "name": "College Majors"
   },
   "animals": {
-    "file": "./animals.json",
+    "file": "./animals.csv",
     "name": "Animals"
   },
   "countries": {
-    "file": "./countries.json",
+    "file": "./countries.csv",
     "name": "Countries"
   },
   "pokemon": {
-    "file": "./pokemon.json",
+    "file": "./pokemon.csv",
     "name": "Pokémon"
   }
 }

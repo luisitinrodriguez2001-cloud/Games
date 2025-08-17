@@ -1,35 +1,47 @@
 export function createKeyboard(container, {onLetter, onEnter, onBackspace} = {}) {
   // use lowercase internally so range comparisons align with the word list
-  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const rows = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
+  const letters = rows.join('');
   const buttons = {};
   const keyboardEl = container;
-  keyboardEl.classList.add('flex', 'flex-wrap', 'gap-2', 'justify-center');
+  keyboardEl.classList.add('flex', 'flex-col');
 
-  letters.split('').forEach(ch => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    // display letters in uppercase for readability
-    btn.textContent = ch.toUpperCase();
-    btn.className = 'px-2 py-1 rounded bg-gray-800 text-gray-100';
-    // pass the lowercase letter to the callback
-    btn.addEventListener('click', () => onLetter?.(ch));
-    buttons[ch] = btn;
-    keyboardEl.appendChild(btn);
+  rows.forEach(row => {
+    const rowEl = document.createElement('div');
+    rowEl.classList.add('flex', 'gap-2', 'justify-center');
+    row.split('').forEach(ch => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      // display letters in uppercase for readability
+      btn.textContent = ch.toUpperCase();
+      btn.className = 'px-2 py-1 rounded bg-gray-800 text-gray-100';
+      // pass the lowercase letter to the callback
+      btn.addEventListener('click', () => onLetter?.(ch));
+      buttons[ch] = btn;
+      rowEl.appendChild(btn);
+    });
+    keyboardEl.appendChild(rowEl);
   });
 
+  const backRow = document.createElement('div');
+  backRow.classList.add('flex', 'justify-center');
   const back = document.createElement('button');
   back.type = 'button';
   back.textContent = 'Backspace';
   back.className = 'px-2 py-1 rounded bg-gray-800 text-gray-100';
   back.addEventListener('click', () => onBackspace?.());
-  keyboardEl.appendChild(back);
+  backRow.appendChild(back);
+  keyboardEl.appendChild(backRow);
 
+  const enterRow = document.createElement('div');
+  enterRow.classList.add('flex', 'justify-center');
   const enter = document.createElement('button');
   enter.type = 'button';
   enter.textContent = 'Enter';
   enter.className = 'px-2 py-1 rounded bg-green-500 text-gray-900 font-semibold';
   enter.addEventListener('click', () => onEnter?.());
-  keyboardEl.appendChild(enter);
+  enterRow.appendChild(enter);
+  keyboardEl.appendChild(enterRow);
 
   function update(state, guess = '') {
     const topWord = state.list[state.top];

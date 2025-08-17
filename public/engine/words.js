@@ -28,7 +28,11 @@ async function loadList(slug) {
   if (!info) throw new Error('Unknown category');
   const dataUrl = new URL(info.file, MANIFEST_URL);
   const text = await fetch(dataUrl).then(r => r.text());
-  const list = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  // CSV files include a header row ("word"), which can throw off
+  // length calculations and cause the board to render blank cues.
+  // Remove the header before normalizing the list.
+  let list = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (list[0]?.toLowerCase() === 'word') list = list.slice(1);
   const norm = list
     .map(s => s.normalize('NFC').toLowerCase())
     .filter(w => /^[a-z]+$/.test(w));

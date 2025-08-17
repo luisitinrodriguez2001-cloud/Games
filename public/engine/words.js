@@ -4,6 +4,17 @@ import {yyyyMMddUTC, seedOf, rng} from './seed.js';
 const MANIFEST_URL = new URL('../data/words/manifest.json', import.meta.url);
 let manifestCache = null;
 
+export let trophyReward = 1;
+
+export function getAttemptSettings(len) {
+  if (len > 1000) return {attempts: 20, trophyReward: 5};
+  if (len > 500) return {attempts: 15, trophyReward: 4};
+  if (len > 250) return {attempts: 10, trophyReward: 3};
+  if (len > 100) return {attempts: 5, trophyReward: 2};
+  if (len <= 50) return {attempts: 3, trophyReward: 1};
+  return {attempts: 4, trophyReward: 2};
+}
+
 export async function loadManifest() {
   if (!manifestCache) {
     manifestCache = await fetch(MANIFEST_URL).then(r => r.json());
@@ -33,8 +44,12 @@ async function loadList(slug) {
 
 const SALT = import.meta.env?.VITE_WORDS_SALT || 'words';
 
-export async function newGame({daily=true, attempts=14, category='general'}={}) {
+export async function newGame({daily=true, category='general'}={}) {
   const {list} = await loadList(category);
+  const len = list.length;
+  const settings = getAttemptSettings(len);
+  trophyReward = settings.trophyReward;
+  const attempts = settings.attempts;
   let idx;
   if (daily) {
     const s = seedOf(yyyyMMddUTC(), 'words', category, SALT);

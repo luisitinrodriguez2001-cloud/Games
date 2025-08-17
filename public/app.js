@@ -26,6 +26,7 @@ app.innerHTML = `
   <div id="board" class="p-2 border-b border-gray-700"></div>
   <div id="letter-strip" class="p-2 border-b border-gray-700"></div>
   <div id="keyboard" class="flex flex-wrap gap-2 justify-center p-2 border-b border-gray-700"></div>
+  <div id="controls" class="flex flex-col gap-2 p-2"></div>
   <div id="feedback" class="text-center text-sm p-2"></div>
   <div id="attempts" class="text-center text-sm p-2">
     <div id="attempt-text" class="mb-1"></div>
@@ -41,6 +42,7 @@ const countdownEl = document.getElementById('countdown');
 const statsEl = document.getElementById('stats');
 const scoreEl = document.getElementById('score');
 const headerEl = document.querySelector('header');
+const controlsEl = document.getElementById('controls');
 let categorySelect = null;
 let streak = parseInt(localStorage.getItem('sandwichle-streak')||'0',10);
 let trophies = parseInt(localStorage.getItem('sandwichle-trophies')||'0',10);
@@ -121,23 +123,38 @@ const newWordBtn = document.createElement('button');
 newWordBtn.textContent = 'New Word';
 newWordBtn.className = 'w-full p-2 rounded bg-blue-600 text-white';
 newWordBtn.addEventListener('click', () => startGame());
-headerEl.appendChild(newWordBtn);
+controlsEl.appendChild(newWordBtn);
 
 const hintBtn = document.createElement('button');
 hintBtn.textContent = 'Hint';
 hintBtn.className = 'w-full p-2 rounded bg-yellow-500 text-gray-900';
+let hintLevel = 0;
 hintBtn.addEventListener('click', async () => {
   if (!game || !game.state?.target) return;
+  const target = game.state.target;
   try {
-    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${game.state.target}`);
-    const data = await res.json();
-    const definition = data[0]?.meanings?.[0]?.definitions?.[0]?.definition;
-    alert(definition ? `Definition: ${definition}` : 'No definition found.');
+    if (hintLevel === 0) {
+      const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${target}`);
+      const data = await res.json();
+      const definition = data[0]?.meanings?.[0]?.definitions?.[0]?.definition;
+      alert(definition ? `Definition: ${definition}` : 'No definition found.');
+    } else if (hintLevel === 1) {
+      alert(`First letter: ${target[0].toUpperCase()}`);
+    } else if (hintLevel === 2) {
+      const res = await fetch(`https://api.datamuse.com/words?rel_syn=${target}&max=5`);
+      const data = await res.json();
+      const syns = data.map(w => w.word).filter(Boolean);
+      alert(syns.length ? `Synonyms: ${syns.slice(0,3).join(', ')}` : 'No synonyms found.');
+    } else {
+      alert('No more hints available.');
+      return;
+    }
+    hintLevel++;
   } catch (err) {
-    alert('Error fetching definition.');
+    alert('Error fetching hint.');
   }
 });
-headerEl.appendChild(hintBtn);
+controlsEl.appendChild(hintBtn);
 
 async function startGame() {
   if (mode === 'words' && categorySelect) {
@@ -150,6 +167,7 @@ async function startGame() {
   currentGuess = '';
   gameOver = false;
   score = 0;
+  hintLevel = 0;
   scoreEl.textContent = `Score: ${score}/5`;
   render();
 }

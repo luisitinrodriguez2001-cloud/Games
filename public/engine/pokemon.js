@@ -6,13 +6,14 @@ const list = pokemon.map(p=>p.name.toLowerCase());
 const SALT = import.meta.env?.VITE_POKEMON_SALT || 'pokemon';
 
 export function newGame({daily=true, attempts=14}={}) {
-  let target;
+  let idx;
   if (daily) {
     const s = seedOf(yyyyMMddUTC(), 'pokemon', 'default', SALT);
-    target = list[s % list.length];
+    idx = 1 + (s % (list.length - 2));
   } else {
-    target = list[Math.floor(rng(Date.now())()*list.length)];
+    idx = 1 + Math.floor(rng(Date.now())() * (list.length - 2));
   }
+  const target = list[idx];
   return createEngine(mode, list, target, attempts);
 }
 

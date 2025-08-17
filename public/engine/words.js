@@ -70,9 +70,9 @@ export async function newGame({daily=true, category='general'}={}) {
   let idx;
   if (daily) {
     const s = seedOf(yyyyMMddUTC(), 'words', category, SALT);
-    idx = s % list.length;
+    idx = 1 + (s % (len - 2));
   } else {
-    idx = Math.floor(rng(Date.now())()*list.length);
+    idx = 1 + Math.floor(rng(Date.now())() * (len - 2));
   }
   const target = list[idx];
 

@@ -6,13 +6,15 @@ const SALT = import.meta.env?.VITE_NUMBERS_SALT || 'numbers';
 
 export function newGame({daily=true, attempts=14}={}) {
   const list = Array.from({length: MAX - MIN + 1}, (_,i)=>MIN+i);
-  let target;
+  const len = list.length;
+  let idx;
   if (daily) {
     const s = seedOf(yyyyMMddUTC(), 'numbers', 'default', SALT);
-    target = MIN + (s % (MAX - MIN + 1));
+    idx = 1 + (s % (len - 2));
   } else {
-    target = MIN + Math.floor(rng(Date.now())() * (MAX - MIN + 1));
+    idx = 1 + Math.floor(rng(Date.now())() * (len - 2));
   }
+  const target = list[idx];
   return createEngine(mode, list, target, attempts);
 }
 

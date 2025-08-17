@@ -116,6 +116,12 @@ if (mode === 'words' && module.loadManifest) {
   headerEl.appendChild(categorySelect);
 }
 
+const newWordBtn = document.createElement('button');
+newWordBtn.textContent = 'New Word';
+newWordBtn.className = 'w-full p-2 rounded bg-blue-600 text-white';
+newWordBtn.addEventListener('click', () => startGame());
+headerEl.appendChild(newWordBtn);
+
 async function startGame() {
   if (mode === 'words' && categorySelect) {
     game = await module.newGame({daily, category: categorySelect.value});

@@ -8,15 +8,18 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-900 text-gray-100" style="touch-action: manipulation;">
   <h1 class="text-2xl font-semibold">Sandwichle++</h1>
-  <div id="streak" class="text-lg"></div>
+  <div id="stats" class="text-lg text-center"></div>
   <div class="flex flex-col gap-2 w-64">
-    <a href="./sandwichle.html" class="px-4 py-2 rounded bg-green-500 text-gray-900 text-center font-semibold">Daily Puzzle</a>
-    <a href="./sandwichle.html?practice=1" class="px-4 py-2 rounded bg-blue-500 text-gray-100 text-center font-semibold">Practice / Levels</a>
+    <a href="./sandwichle.html" class="px-4 py-2 rounded bg-blue-500 text-gray-100 text-center font-semibold">Practice</a>
     <a href="./how-to-play.html" class="px-4 py-2 rounded bg-gray-700 text-gray-100 text-center font-semibold">How to Play</a>
   </div>
   <script>
-    const streak = localStorage.getItem('sandwichle-streak') || 0;
-    document.getElementById('streak').textContent = `Current Streak: ${streak}`;
+    const streak = parseInt(localStorage.getItem('sandwichle-streak') || '0', 10);
+    const history = JSON.parse(localStorage.getItem('sandwichle-history') || '[]');
+    const gamesPlayed = history.length;
+    const gamesWon = history.filter(h => h.win).length;
+    const winPct = gamesPlayed ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
+    document.getElementById('stats').innerHTML = `Current Streak: ${streak}<br>Games Played: ${gamesPlayed}<br>Games Won: ${gamesWon} (${winPct}%)`;
   </script>
 </body>
 </html>

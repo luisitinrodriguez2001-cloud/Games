@@ -530,7 +530,7 @@
         if (navigator.share) {
           await navigator.share({ text, url: location.href });
         } else {
-          await navigator.clipboard.writeText(text);
+          await navigator.clipboard.writeText(`${text} ${location.href}`);
           dom.status.textContent = "Copied to clipboard.";
         }
       } catch {}

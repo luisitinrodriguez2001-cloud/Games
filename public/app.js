@@ -189,7 +189,8 @@ if (mode === 'words' && module.loadManifest) {
 const newWordBtn = document.createElement('button');
 newWordBtn.textContent = 'New Word';
 newWordBtn.className = 'w-full p-2 rounded bg-blue-600 text-white';
-newWordBtn.addEventListener('click', () => startGame());
+// New Word should always start a non-daily game so the target changes
+newWordBtn.addEventListener('click', () => startGame({daily: false}));
 controlsEl.appendChild(newWordBtn);
 
 const hintBtn = document.createElement('button');
@@ -242,12 +243,13 @@ revealLetterBtn.addEventListener('click', () => {
 });
 controlsEl.appendChild(revealLetterBtn);
 
-async function startGame() {
+// Starts a new game. Pass {daily: false} to force a random target word.
+async function startGame({daily: useDaily = daily} = {}) {
   if (mode === 'words' && categorySelect) {
-    game = await module.newGame({daily, category: categorySelect.value});
+    game = await module.newGame({daily: useDaily, category: categorySelect.value});
   } else {
-    const max = daily ? DEFAULT_MAX_ATTEMPTS : parseInt(params.get('attempts')||String(DEFAULT_MAX_ATTEMPTS),10);
-    game = await module.newGame({daily, attempts: max});
+    const max = useDaily ? DEFAULT_MAX_ATTEMPTS : parseInt(params.get('attempts')||String(DEFAULT_MAX_ATTEMPTS),10);
+    game = await module.newGame({daily: useDaily, attempts: max});
   }
   attempts = game.state.guesses.length + game.state.attemptsLeft;
   currentGuess = '';

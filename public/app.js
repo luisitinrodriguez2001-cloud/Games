@@ -19,7 +19,6 @@ app.innerHTML = `
 <header class="flex flex-col items-center gap-2 mb-4">
   <h1 class="text-2xl font-semibold">Sandwichle++</h1>
   <div id="countdown" class="text-sm opacity-75"></div>
-  <div id="stats" class="text-sm"></div>
   <div id="score" class="text-sm"></div>
 </header>
 <main class="flex flex-col h-full">
@@ -39,7 +38,6 @@ const feedbackEl = document.getElementById('feedback');
 const attemptTextEl = document.getElementById('attempt-text');
 const attemptCirclesEl = document.getElementById('attempt-circles');
 const countdownEl = document.getElementById('countdown');
-const statsEl = document.getElementById('stats');
 const scoreEl = document.getElementById('score');
 const headerEl = document.querySelector('header');
 const controlsEl = document.getElementById('controls');
@@ -97,10 +95,6 @@ function saveHistory(win, guesses) {
   localStorage.setItem('sandwichle-history', JSON.stringify(history));
 }
 
-function updateStats(){
-  statsEl.innerHTML = `<div>Streak: ${streak}</div><div aria-label="Trophies: ${trophies}">🏆 ${trophies}</div>`;
-}
-updateStats();
 
 if (mode === 'words' && module.loadManifest) {
   const manifest = await module.loadManifest();
@@ -193,7 +187,6 @@ function submitGuess() {
     trophies += module.trophyReward ?? 1;
     localStorage.setItem('sandwichle-streak', streak);
     localStorage.setItem('sandwichle-trophies', trophies);
-    updateStats();
     score = getScoreForGuess(game.state.guesses.length);
     scoreEl.textContent = `Score: ${score}/5`;
     render();
@@ -211,7 +204,6 @@ function submitGuess() {
     gameOver = true;
     streak = 0;
     localStorage.setItem('sandwichle-streak', streak);
-    updateStats();
     render();
     saveHistory(false, game.state.guesses.length);
     const share = encodeShare(game.state.guesses, game.state.targetIdx);

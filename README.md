@@ -2,6 +2,8 @@
 
 A static, mobile-first guessing game where you find the secret entry sandwiched alphabetically between two others, with multiple modes (words, numbers, countries, dates, Pokémon).
 
+In word mode, a new **Hint** button fetches the target word's definition from an online dictionary API to help you guess.
+
 ## Development
 
 ```

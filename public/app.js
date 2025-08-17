@@ -123,6 +123,22 @@ newWordBtn.className = 'w-full p-2 rounded bg-blue-600 text-white';
 newWordBtn.addEventListener('click', () => startGame());
 headerEl.appendChild(newWordBtn);
 
+const hintBtn = document.createElement('button');
+hintBtn.textContent = 'Hint';
+hintBtn.className = 'w-full p-2 rounded bg-yellow-500 text-gray-900';
+hintBtn.addEventListener('click', async () => {
+  if (!game || !game.state?.target) return;
+  try {
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${game.state.target}`);
+    const data = await res.json();
+    const definition = data[0]?.meanings?.[0]?.definitions?.[0]?.definition;
+    alert(definition ? `Definition: ${definition}` : 'No definition found.');
+  } catch (err) {
+    alert('Error fetching definition.');
+  }
+});
+headerEl.appendChild(hintBtn);
+
 async function startGame() {
   if (mode === 'words' && categorySelect) {
     game = await module.newGame({daily, category: categorySelect.value});

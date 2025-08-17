@@ -29,6 +29,12 @@ async function loadList(slug) {
   const dataUrl = new URL(info.file, MANIFEST_URL);
   const text = await fetch(dataUrl).then(r => r.text());
   const list = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  // Some of the word lists include a header row such as "word".  The
+  // gameplay engine expects a simple list of words, so remove a leading
+  // header if present to avoid treating it as an actual guessable word.
+  if (list[0]?.toLowerCase() === 'word') {
+    list.shift();
+  }
   const norm = list
     .map(s => s.normalize('NFC').toLowerCase())
     .filter(w => /^[a-z]+$/.test(w));

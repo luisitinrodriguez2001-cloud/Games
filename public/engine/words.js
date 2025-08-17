@@ -16,15 +16,8 @@ async function loadList(slug) {
   const info = manifest[slug];
   if (!info) throw new Error('Unknown category');
   const dataUrl = new URL(info.file, MANIFEST_URL);
-  const data = await fetch(dataUrl).then(r => r.json());
-  let list;
-  if (Array.isArray(data)) {
-    // simple string list
-    list = data.map(w => (typeof w === 'string' ? w : w.name));
-  } else {
-    // array of objects with name fields
-    list = (data.words || data).map(obj => obj.name || obj);
-  }
+  const text = await fetch(dataUrl).then(r => r.text());
+  const list = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
   const norm = list
     .map(s => s.normalize('NFC').toLowerCase())
     .filter(w => /^[a-z]+$/.test(w));

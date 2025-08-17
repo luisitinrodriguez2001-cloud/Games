@@ -42,6 +42,7 @@ let streak = parseInt(localStorage.getItem('sandwichle-streak')||'0',10);
 let trophies = parseInt(localStorage.getItem('sandwichle-trophies')||'0',10);
 let currentGuess = '';
 let gameOver = false;
+let lastTarget = null;
 const letterStrip = createLetterStrip(document.getElementById('letter-strip'));
 const keyboard = createKeyboard(document.getElementById('keyboard'), {
   onLetter: ch => {
@@ -78,14 +79,27 @@ function showError(msg, guess) {
   if (guess) {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = '?';
-    btn.className = 'ml-2 underline';
+    btn.textContent = '❓';
+    btn.className = 'ml-2 text-blue-500';
     btn.addEventListener('click', () => {
-      if (confirm('Do you believe this word is in the category and should be added?')) {
+      const overlay = document.createElement('div');
+      overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center';
+      overlay.innerHTML = `
+        <div class="bg-white text-gray-900 p-4 rounded shadow max-w-xs text-center">
+          <p class="mb-4">Do you believe this word is in the category and should be added?</p>
+          <div class="flex justify-center gap-4">
+            <button class="px-3 py-1 bg-gray-200 rounded no-btn">No</button>
+            <button class="px-3 py-1 bg-blue-600 text-white rounded yes-btn">Yes</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('.no-btn').addEventListener('click', () => overlay.remove());
+      overlay.querySelector('.yes-btn').addEventListener('click', () => {
         addWordToCategory(guess);
         const res = game.guess(guess);
         handleResult(res);
-      }
+        overlay.remove();
+      });
     });
     feedbackEl.appendChild(btn);
   }
@@ -190,7 +204,9 @@ const newWordBtn = document.createElement('button');
 newWordBtn.textContent = 'New Word';
 newWordBtn.className = 'w-full p-2 rounded bg-blue-600 text-white';
 // New Word should always start a non-daily game so the target changes
-newWordBtn.addEventListener('click', () => startGame({daily: false}));
+newWordBtn.addEventListener('click', async () => {
+  await startGame({daily: false});
+});
 controlsEl.appendChild(newWordBtn);
 
 const hintBtn = document.createElement('button');
@@ -236,21 +252,24 @@ revealLetterBtn.addEventListener('click', () => {
   const target = game.state.target.toUpperCase();
   if (revealedLetters < target.length) {
     revealedLetters++;
-    alert(`Revealed letters: ${target.slice(0, revealedLetters)}`);
-  } else {
-    alert('All letters revealed.');
   }
+  alert(`Revealed letters: ${target.slice(0, revealedLetters)}`);
 });
 controlsEl.appendChild(revealLetterBtn);
 
 // Starts a new game. Pass {daily: false} to force a random target word.
 async function startGame({daily: useDaily = daily} = {}) {
-  if (mode === 'words' && categorySelect) {
-    game = await module.newGame({daily: useDaily, category: categorySelect.value});
-  } else {
-    const max = useDaily ? DEFAULT_MAX_ATTEMPTS : parseInt(params.get('attempts')||String(DEFAULT_MAX_ATTEMPTS),10);
-    game = await module.newGame({daily: useDaily, attempts: max});
-  }
+  let newGame;
+  do {
+    if (mode === 'words' && categorySelect) {
+      newGame = await module.newGame({daily: useDaily, category: categorySelect.value});
+    } else {
+      const max = useDaily ? DEFAULT_MAX_ATTEMPTS : parseInt(params.get('attempts')||String(DEFAULT_MAX_ATTEMPTS),10);
+      newGame = await module.newGame({daily: useDaily, attempts: max});
+    }
+  } while (!useDaily && lastTarget && newGame.state.target === lastTarget && newGame.state.list.length > 1);
+  game = newGame;
+  lastTarget = game.state.target;
   attempts = game.state.guesses.length + game.state.attemptsLeft;
   currentGuess = '';
   gameOver = false;
